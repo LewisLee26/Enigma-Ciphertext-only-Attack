@@ -1,0 +1,9 @@
+I will have a program that, for a given input text, will input it into an enigma machine and guess the settings.
+Then it will give the output from the enigma machine to an AI that will take text as an input and then output a number from 1 to 0 (1 is shakespeare, 0 is cipher text). 
+The program will repeat inputing the text into the engima machine and then giving the output to the AI.
+
+This works because the closer the settings are on the enigma machine the more real text/shakespeare there will be in the output.
+It will need a lot of text as input (over 200 characters).
+
+
+For the training I can have two classes, encrypted and decrypted text. Each will class be a single text file. I could just feed one text file into a enigma machine and then use that as the encrypted text but im not sure whether that will create any problems. 
