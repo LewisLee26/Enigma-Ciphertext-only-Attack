@@ -77,7 +77,34 @@ encoder = tf.keras.layers.TextVectorization(
     split=split_chars)
 encoder.adapt(raw_train_ds.map(lambda text, label: text))
 
-print(np.array(encoder.get_vocabulary()))
-print()
-print(encoder(example)[:3].numpy())
+model = tf.keras.Sequential([
+    encoder,
+    tf.keras.layers.Embedding(
+        input_dim=len(encoder.get_vocabulary()),
+        output_dim=64,
+        # Use masking to handle the variable sequence lengths
+        mask_zero=True),
+    tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64)),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(1)
+])
 
+model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+              optimizer=tf.keras.optimizers.Adam(1e-4),
+              metrics=['accuracy'])
+
+history = model.fit(raw_train_ds,
+                    epochs=5,
+                    batch_size=64,
+                    validation_data=raw_val_ds,
+                    validation_steps=30)
+
+test_loss, test_acc = model.evaluate(raw_test_ds)
+
+print('Test Loss:', test_loss)
+print('Test Accuracy:', test_acc)
+
+while True:
+    sample_text = input("input text: ")
+    predictions = model.predict(np.array([sample_text]))
+    print(predictions)
