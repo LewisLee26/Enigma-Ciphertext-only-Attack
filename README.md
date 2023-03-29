@@ -1,3 +1,3 @@
-# enigmaCOA
+# Enigma-Ciphertext-only-Attack
 
-enigmaCOA is a decyption tool for the enigma machine that allows you to preform a cypher text only attack on encrypted text.
+Enigma-Ciphertext-only-Attack is a tool that uses artificial intelligence to preform a ciphertext-only attack to decypt text from the Enigma Machine.
