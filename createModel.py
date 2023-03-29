@@ -1,12 +1,30 @@
+import os
+# removing tensorflow warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 import numpy as np
 import tensorflow as tf
 import os
 import re
+import matplotlib.pyplot as plt
 
+
+# plots a graph between any given metric vs epochs
+def plot_graphs(history, metric):
+    plt.plot(history.history[metric])
+    plt.plot(history.history['val_' + metric], '')
+    plt.xlabel("Epochs")
+    plt.ylabel(metric)
+    plt.legend([metric, 'val_' + metric])
+
+
+# creating a regular expression to remove all non-letter characters
 regex = re.compile('[^a-z]')
 
-cwd = os.getcwd()  # Get the current working directory (cwd)
+# Get the current working directory
+cwd = os.getcwd()
 
+# creating a vocabulary of all letters used within the dataset
 decryptedText = ""
 for filename in os.listdir(os.getcwd() + "/dataset/train/decryption/"):
     with open(os.path.join(os.getcwd() + "/dataset/train/decryption/", filename), 'r') as f:  # open in readonly mode
@@ -21,6 +39,8 @@ text_encoded = np.array(text_encoded)
 
 batch_size = 32
 seed = 42
+
+# getting the datasets
 raw_train_ds = tf.keras.utils.text_dataset_from_directory(
     cwd + '/dataset/train',
     batch_size=batch_size,
@@ -40,12 +60,7 @@ raw_test_ds = tf.keras.utils.text_dataset_from_directory(
     batch_size=batch_size)
 
 
-@tf.keras.utils.register_keras_serializable()
-def custom_standardization(input_data):
-    lowercase = tf.strings.lower(input_data)
-    return tf.strings.regex_replace(lowercase, '[^a-z]', '')
-
-
+# separating the input into a array of individual characters
 @tf.keras.utils.register_keras_serializable()
 def split_chars(input_data):
     s = tf.strings.regex_replace(input_data, ' ', '')
@@ -55,6 +70,7 @@ def split_chars(input_data):
     return s
 
 
+# creating custom layer to change the text input into a vector
 VOCAB_SIZE = 26
 encoder = tf.keras.layers.TextVectorization(
     standardize='lower_and_strip_punctuation',
@@ -62,6 +78,7 @@ encoder = tf.keras.layers.TextVectorization(
     split=split_chars)
 encoder.adapt(raw_train_ds.map(lambda text, label: text))
 
+# creating the layers in the model
 model = tf.keras.Sequential([
     encoder,
     tf.keras.layers.Embedding(len(encoder.get_vocabulary()), 64, mask_zero=True),
@@ -76,15 +93,26 @@ model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
               optimizer=tf.keras.optimizers.Adam(1e-4),
               metrics=['accuracy'])
 
+# training the model
 history = model.fit(raw_train_ds,
                     epochs=10,
                     batch_size=32,
                     validation_data=raw_val_ds,
                     validation_steps=30)
 
+# summary of the models performance
 test_loss, test_acc = model.evaluate(raw_test_ds)
+
+model.summary()
+
+plt.subplot(1, 2, 1)
+plot_graphs(history, 'accuracy')
+plt.subplot(1, 2, 2)
+plot_graphs(history, 'loss')
+plt.show()
 
 print('Test Loss:', test_loss)
 print('Test Accuracy:', test_acc)
 
 model.save('saved_model/my_model')
+print("model saved")
