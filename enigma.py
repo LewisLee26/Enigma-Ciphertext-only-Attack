@@ -59,6 +59,7 @@ class Rotor(Connector):
 class Plugboard(Connector):
     def __init__(self, characterPairs):
         super().__init__(characterPairs)
+        self.characterPairs = alphabet
 
     # creates a random number of random plugboard connections
     def randomizeCharacterPairs(self):
@@ -158,3 +159,4 @@ def enigma(inputText, rotorSlot1, rotorSlot2, rotorSlot3, plugboard, reflector):
 
     # returning the final string connected together
     return ''.join(str(x) for x in outputArrayText)
+
