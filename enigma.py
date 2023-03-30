@@ -1,11 +1,13 @@
 import random
 import re
 
-alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
-            "v", "w", "x", "y", "z"]
+alphabet = "abcdefghijklmnopqrstuvwxyz"
+
+# creating a regular expression to remove all non-letter characters
 regex = re.compile('[^a-z]')
 
 
+# the parent class for all parts of the enigma machine
 class Connector:
     def __init__(self, characterPairs):
         self.characterPairs = characterPairs
@@ -19,20 +21,22 @@ class Connector:
     def clearCharacterPairs(self):
         self.characterPairs = []
 
-
+# class for the rotor
 class Rotor(Connector):
     def __init__(self, characterPairs, rotorPosition):
         super().__init__(characterPairs)
         self.rotorPosition = rotorPosition
 
+    # creates a random set of rotor connections
     def randomizeCharacterPairs(self):
-        self.characterPairs = []
+        self.characterPairs = ""
         alphabetCopy = alphabet.copy()
         while len(alphabetCopy) > 0:
             randomNumberPosition = random.randint(0, len(alphabetCopy) - 1)
             self.characterPairs.append(alphabetCopy[randomNumberPosition])
             del alphabetCopy[randomNumberPosition]
 
+    # the boolean variable forward refers to which direction in it is passing through
     def returnCharacterPair(self, characterInput, Forward):
         if Forward:
             return self.characterPairs[(alphabet.index(characterInput) - self.rotorPosition) % 26]
@@ -56,56 +60,83 @@ class Plugboard(Connector):
     def __init__(self, characterPairs):
         super().__init__(characterPairs)
 
+    # creates a random number of random plugboard connections
     def randomizeCharacterPairs(self):
-        self.characterPairs = []
-        alphabetCopy = alphabet.copy()
-        numberOfPairs = random.randint(0, 13)
-        for a in range(0, numberOfPairs):
-            pair = []
-            for b in range(0, 2):
-                randomNumberPosition = random.randint(0, len(alphabetCopy) - 1)
-                pair.append(alphabetCopy[randomNumberPosition])
-                del alphabetCopy[randomNumberPosition]
-            self.characterPairs.append(pair)
+        self.characterPairs = ""
+        alphabetCopy = alphabet
+        characterPairs = alphabet
+        for i in range(random.randint(0, len(alphabetCopy)/2)):
+            randomNumberPosition1 = random.randint(0, len(alphabetCopy) - 1)
+            character1 = alphabetCopy[randomNumberPosition1]
+            alphabetCopy = alphabetCopy[:randomNumberPosition1] + alphabetCopy[randomNumberPosition1+1:]
+            randomNumberPosition2 = random.randint(0, len(alphabetCopy) - 1)
+            character2 = alphabetCopy[randomNumberPosition2]
+            alphabetCopy = alphabetCopy[:randomNumberPosition2] + alphabetCopy[randomNumberPosition2+1:]
+            lst = list(characterPairs)
+            lst[characterPairs.index(character1)], lst[characterPairs.index(character2)] = lst[characterPairs.index(character2)], lst[characterPairs.index(character1)]
+            characterPairs = ''.join(lst)
+        self.characterPairs = characterPairs
 
     def returnCharacterPair(self, characterInput):
-        for i in range(0, len(self.characterPairs)):
-            if self.characterPairs[i][0] == characterInput:
-                return self.characterPairs[i][1]
-            elif self.characterPairs[i][1] == characterInput:
-                return self.characterPairs[i][0]
-        return characterInput
+        return self.characterPairs[alphabet.index(characterInput) % 26]
 
-    def addCharacterPair(self, characterPair):
-        self.characterPairs.append(characterPair)
-
-    def removeCharacterPair(self):
-        del self.characterPairs[-1]
-
-
-class Reflector(Plugboard):
+class Reflector(Connector):
     def __init__(self, characterPairs):
         super().__init__(characterPairs)
 
+    # creates a random set of rotor connections
     def randomizeCharacterPairs(self):
-        self.characterPairs = []
-        alphabetCopy = alphabet.copy()
-        for a in range(0, 13):
-            pair = []
-            for b in range(0, 2):
-                randomNumberPosition = random.randint(0, len(alphabetCopy) - 1)
-                pair.append(alphabetCopy[randomNumberPosition])
-                del alphabetCopy[randomNumberPosition]
-            self.characterPairs.append(pair)
+        self.characterPairs = ""
+        alphabetCopy = alphabet
+        characterPairs = alphabet
+        for i in range(13):
+            randomNumberPosition1 = random.randint(0, len(alphabetCopy) - 1)
+            character1 = alphabetCopy[randomNumberPosition1]
+            alphabetCopy = alphabetCopy[:randomNumberPosition1] + alphabetCopy[randomNumberPosition1+1:]
+            randomNumberPosition2 = random.randint(0, len(alphabetCopy) - 1)
+            character2 = alphabetCopy[randomNumberPosition2]
+            alphabetCopy = alphabetCopy[:randomNumberPosition2] + alphabetCopy[randomNumberPosition2+1:]
+            lst = list(characterPairs)
+            lst[characterPairs.index(character1)], lst[characterPairs.index(character2)] = lst[characterPairs.index(character2)], lst[characterPairs.index(character1)]
+            characterPairs = ''.join(lst)
+        self.characterPairs = characterPairs
 
 
+    def returnCharacterPair(self, characterInput):
+        return self.characterPairs[alphabet.index(characterInput) % 26]
+
+
+# the standard rotors used in WWII
+# I-III is normal enigma, IV-V is army and VI-VIII is naval
+rotors = {
+    "I": "ekmflgdqvzntowyhxuspaibrcj",
+    "II": "ajdksiruxblhwtmcqgznpyfvoe",
+    "III": "bdfhjlcprtxvznyeiwgakmusqo",
+    "IV": "esovpzjayquirhxlnftgkdcmwb",
+    "V": "vzbrgityupsdnhlxawmjqofeck",
+    "VI": "jpgvoumfyqbenhzrdkasxlictw",
+    "VII": "nzjhgrcxmyswboufaivlpekqdt",
+    "VII": "fkqhtlxocbjspdzramewniuygv"
+}
+
+# the standard reflectors used in WWII
+reflectors = {
+    "A": "ejmzalyxvbwfcrquontspikhgd",
+    "B": "nzjhgrcxmyswboufaivlpekqdt",
+    "C": "fkqhtlxocbjspdzramewniuygv",
+}
+
+# function to run the enigma machine
 def enigma(inputText, rotorSlot1, rotorSlot2, rotorSlot3, plugboard, reflector):
+    # changing the inputText into a form that can be processed by the enigma machine
     inputText = regex.sub('', inputText.lower())
+    # splitting the string into an array of characters
     arrayText = [char for char in inputText]
 
     outputArrayText = []
     for i in range(0, len(arrayText)):
-        currentCharacter = []
+        # one pass through the machine
+        currentCharacter = arrayText[i]
         currentCharacter = plugboard.returnCharacterPair(arrayText[i])
         currentCharacter = rotorSlot3.returnCharacterPair(currentCharacter, True)
         currentCharacter = rotorSlot2.returnCharacterPair(currentCharacter, True)
@@ -118,10 +149,12 @@ def enigma(inputText, rotorSlot1, rotorSlot2, rotorSlot3, plugboard, reflector):
 
         outputArrayText.append(currentCharacter)
 
+        # moves the rotor positions after each character has been processed
         rotorSlot1.incrementRotorPosition()
         if rotorSlot1.returnModRotorPosition() == 0:
             rotorSlot2.incrementRotorPosition()
             if rotorSlot2.returnModRotorPosition() == 0:
                 rotorSlot3.incrementRotorPosition()
 
+    # returning the final string connected together
     return ''.join(str(x) for x in outputArrayText)

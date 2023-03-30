@@ -7,27 +7,25 @@ path = os.getcwd()
 
 regex = re.compile('[^a-z]')
 
-rotor1 = enigma.Rotor([], 0)
-rotor2 = enigma.Rotor([], 0)
-rotor3 = enigma.Rotor([], 0)
+rotor1 = enigma.Rotor(enigma.rotors["I"], 0)
+rotor2 = enigma.Rotor(enigma.rotors["II"], 0)
+rotor3 = enigma.Rotor(enigma.rotors["III"], 0)
+rotor4 = enigma.Rotor(enigma.rotors["IV"], 0)
+rotor5 = enigma.Rotor(enigma.rotors["V"], 0)
 
-plugboard1 = enigma.Plugboard([])
-
-reflector1 = enigma.Reflector([])
+rotors = [rotor1, rotor2, rotor3, rotor4, rotor5]
+plugboard1 = enigma.Plugboard("")
+reflector1 = enigma.Reflector(enigma.reflectors["A"])
 
 
 def encryptText(i):
-    rotor1.randomizeCharacterPairs()
-    rotor1.setRotorPosition(random.randint(0, 25))
-    rotor2.randomizeCharacterPairs()
-    rotor2.setRotorPosition(random.randint(0, 25))
-    rotor3.randomizeCharacterPairs()
-    rotor3.setRotorPosition(random.randint(0, 25))
+    random.shuffle(rotors)
+    rotors[0].setRotorPosition(random.randint(0,25))
+    rotors[1].setRotorPosition(random.randint(0,25))
+    rotors[2].setRotorPosition(random.randint(0,25))
     plugboard1.randomizeCharacterPairs()
-    reflector1.randomizeCharacterPairs()
     print(i)
-    return enigma.enigma(content[i * size:(i + 1) * size], rotor1, rotor2, rotor3, plugboard1, reflector1)
-
+    return enigma.enigma(content[i * size:(i + 1) * size], rotors[0], rotors[1], rotors[2], plugboard1, reflector1)
 
 with open("shakespeare.txt") as f:
     content = f.read()
