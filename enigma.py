@@ -6,6 +6,12 @@ alphabet = "abcdefghijklmnopqrstuvwxyz"
 # creating a regular expression to remove all non-letter characters
 regex = re.compile('[^a-z]')
 
+umlaut = ["ä", "ü", "ö"]
+replaceUmlaut = ["ae", "ue", "oe"]
+eszett = "ß"
+replaceEszett = "ss"
+regexEszett = re.compile('ß')
+
 
 # the parent class for all parts of the enigma machine
 class Connector:
@@ -20,6 +26,7 @@ class Connector:
 
     def clearCharacterPairs(self):
         self.characterPairs = []
+
 
 # class for the rotor
 class Rotor(Connector):
@@ -66,20 +73,32 @@ class Plugboard(Connector):
         self.characterPairs = ""
         alphabetCopy = alphabet
         characterPairs = alphabet
-        for i in range(random.randint(0, len(alphabetCopy)/2)):
+        for i in range(random.randint(0, len(alphabetCopy) / 2)):
             randomNumberPosition1 = random.randint(0, len(alphabetCopy) - 1)
             character1 = alphabetCopy[randomNumberPosition1]
-            alphabetCopy = alphabetCopy[:randomNumberPosition1] + alphabetCopy[randomNumberPosition1+1:]
+            alphabetCopy = alphabetCopy[:randomNumberPosition1] + alphabetCopy[randomNumberPosition1 + 1:]
             randomNumberPosition2 = random.randint(0, len(alphabetCopy) - 1)
             character2 = alphabetCopy[randomNumberPosition2]
-            alphabetCopy = alphabetCopy[:randomNumberPosition2] + alphabetCopy[randomNumberPosition2+1:]
+            alphabetCopy = alphabetCopy[:randomNumberPosition2] + alphabetCopy[randomNumberPosition2 + 1:]
             lst = list(characterPairs)
-            lst[characterPairs.index(character1)], lst[characterPairs.index(character2)] = lst[characterPairs.index(character2)], lst[characterPairs.index(character1)]
+            lst[characterPairs.index(character1)], lst[characterPairs.index(character2)] = lst[characterPairs.index(
+                character2)], lst[characterPairs.index(character1)]
             characterPairs = ''.join(lst)
         self.characterPairs = characterPairs
 
     def returnCharacterPair(self, characterInput):
         return self.characterPairs[alphabet.index(characterInput) % 26]
+
+    def swapCharacters(self, characterPair):
+        lst = list(self.characterPairs)
+        lst[alphabet.index(characterPair[0])], lst[alphabet.index(characterPair[1])] = lst[alphabet.index(
+            characterPair[1])], lst[alphabet.index(characterPair[0])]
+        self.characterPairs = lst
+
+    def setCharacterPairs(self, characterPairs):
+        for i in characterPairs:
+            self.swapCharacters(i)
+
 
 class Reflector(Connector):
     def __init__(self, characterPairs):
@@ -93,15 +112,15 @@ class Reflector(Connector):
         for i in range(13):
             randomNumberPosition1 = random.randint(0, len(alphabetCopy) - 1)
             character1 = alphabetCopy[randomNumberPosition1]
-            alphabetCopy = alphabetCopy[:randomNumberPosition1] + alphabetCopy[randomNumberPosition1+1:]
+            alphabetCopy = alphabetCopy[:randomNumberPosition1] + alphabetCopy[randomNumberPosition1 + 1:]
             randomNumberPosition2 = random.randint(0, len(alphabetCopy) - 1)
             character2 = alphabetCopy[randomNumberPosition2]
-            alphabetCopy = alphabetCopy[:randomNumberPosition2] + alphabetCopy[randomNumberPosition2+1:]
+            alphabetCopy = alphabetCopy[:randomNumberPosition2] + alphabetCopy[randomNumberPosition2 + 1:]
             lst = list(characterPairs)
-            lst[characterPairs.index(character1)], lst[characterPairs.index(character2)] = lst[characterPairs.index(character2)], lst[characterPairs.index(character1)]
+            lst[characterPairs.index(character1)], lst[characterPairs.index(character2)] = lst[characterPairs.index(
+                character2)], lst[characterPairs.index(character1)]
             characterPairs = ''.join(lst)
         self.characterPairs = characterPairs
-
 
     def returnCharacterPair(self, characterInput):
         return self.characterPairs[alphabet.index(characterInput) % 26]
@@ -127,10 +146,17 @@ reflectors = {
     "C": "fkqhtlxocbjspdzramewniuygv",
 }
 
+
 # function to run the enigma machine
 def enigma(inputText, rotorSlot1, rotorSlot2, rotorSlot3, plugboard, reflector):
     # changing the inputText into a form that can be processed by the enigma machine
-    inputText = regex.sub('', inputText.lower())
+    inputText = inputText.lower()
+    for i in range(len(umlaut)):
+        regexUmlaut = re.compile(umlaut[i])
+        inputText = regexUmlaut.sub(replaceUmlaut[i], inputText)
+    inputText = regexEszett.sub(replaceEszett, inputText)
+    inputText = regex.sub('', inputText)
+
     # splitting the string into an array of characters
     arrayText = [char for char in inputText]
 
@@ -159,4 +185,3 @@ def enigma(inputText, rotorSlot1, rotorSlot2, rotorSlot3, plugboard, reflector):
 
     # returning the final string connected together
     return ''.join(str(x) for x in outputArrayText)
-

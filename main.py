@@ -7,11 +7,10 @@ import numpy as np
 import tensorflow as tf
 import keras
 import enigma
-from itertools import combinations
+from itertools import permutations
 import time
 
-alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
-            "v", "w", "x", "y", "z"]
+alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 
 # loading the text classification model
@@ -58,24 +57,22 @@ rotorSet = []
 #        rotorSet = combo
 
 # combos = []
-# for combo in combinations(rotors, 3):
+# for combo in permutations(rotors, 3):
 #     combo[0].setRotorPosition(0)
 #     combo[1].setRotorPosition(0)
 #     combo[2].setRotorPosition(0)
 #     decryptedText = enigma.enigma(encryptedText, combo[0], combo[1], combo[2], plugboard1, reflector1)
 #     prediction = model.predict(np.array([decryptedText]))
 #     combos.append([combo, prediction])
-#
-# for a in combos:
-#     print(a[1])
-#
+
 # combos = sorted(combos, key=lambda x: x[1])
 
-rotorPosition1 = 0
-rotorPosition2 = 0
-rotorPosition3 = 0
 
 rotorSet = [rotor1, rotor2, rotor3]
+
+bestRotorPositions = []
+for i in range(40):
+    bestRotorPositions.append([[], 1])
 
 for a in range(26):
     for b in range(26):
@@ -85,16 +82,18 @@ for a in range(26):
             rotorSet[2].setRotorPosition(c)
             decryptedText = enigma.enigma(encryptedText, rotorSet[0], rotorSet[1], rotorSet[2], plugboard1, reflector1)
             prediction = model.predict(np.array([decryptedText]))
-            if prediction < bestPrediction:
-                bestPrediction = prediction
-                rotorPosition1 = a
-                rotorPosition2 = b
-                rotorPosition3 = c
-            print(a*26*26 + b*26 + c)
+            if prediction < bestRotorPositions[(len(bestRotorPositions) - 1)][1]:
+                bestRotorPositions[(len(bestRotorPositions) - 1)] = [[a, b, c], prediction]
+                bestRotorPositions = sorted(bestRotorPositions, key=lambda x: x[1])
+            print(a * 26 * 26 + b * 26 + c)
 
-# rotorPosition1 = 24
-# rotorPosition2 = 9
-# rotorPosition3 = 0
+print(rotorSet[0].returnRotorPosition())
+print(rotorSet[1].returnRotorPosition())
+print(rotorSet[2].returnRotorPosition())
+
+# rotorPosition1 = 11
+# rotorPosition2 = 17
+# rotorPosition3 = 18
 #
 # rotorSet[0].setRotorPosition(rotorPosition1)
 # rotorSet[1].setRotorPosition(rotorPosition2)
@@ -104,29 +103,29 @@ for a in range(26):
 # bestPrediction = model.predict(
 #     np.array([enigma.enigma(encryptedText, rotorSet[0], rotorSet[1], rotorSet[2], plugboard1, reflector1)]))
 # print("best prediction: " + str(bestPrediction))
-
+#
 # finding the plugboard settings
 # plugboardPrediction = bestPrediction
-# plugboardPair = []
+# plugboardPair = ""
 # plugboardPairs = []
 # while True:
-#     plugboardPair = []
+#     plugboardPair = ""
 #     for a in range(26):
 #         for b in range(26):
 #             if a != b:
-#                 if [alphabet[a], alphabet[b]] in plugboardPairs:
+#                 if [alphabet[a]+alphabet[b]] in plugboardPairs:
 #                     break
 #                 rotorSet[0].setRotorPosition(rotorPosition1)
 #                 rotorSet[1].setRotorPosition(rotorPosition2)
 #                 rotorSet[2].setRotorPosition(rotorPosition3)
-#                 plugboard1.addCharacterPair([alphabet[a], alphabet[b]])
+#                 plugboard1.swapCharacters(alphabet[a]+alphabet[b])
 #                 decryptedText = enigma.enigma(encryptedText, rotorSet[0], rotorSet[1], rotorSet[2], plugboard1,
 #                                               reflector1)
-#                 plugboard1.removeCharacterPair()
+#                 plugboard1.swapCharacters(alphabet[a]+alphabet[b])
 #                 prediction = model.predict(np.array([decryptedText]))
 #                 if prediction < plugboardPrediction:
 #                     plugboardPrediction = prediction
-#                     plugboardPair = [alphabet[a], alphabet[b]]
+#                     plugboardPair = alphabet[a]+alphabet[b]
 #                 # print(a*26 + b)
 #                 print(prediction)
 #         bestPrediction = plugboardPrediction
@@ -139,14 +138,14 @@ for a in range(26):
 # displaying final information
 end = time.time()
 print("time: " + str(end - start))
-print("prediction: " + str(bestPrediction))
-print("rotors: " + str(rotorSet))
-print("rotor 1 pos: " + str(rotorPosition1))
-print("rotor 2 pos: " + str(rotorPosition2))
-print("rotor 3 pos: " + str(rotorPosition3))
-print("plugboard: " + str(plugboardPairs))
-rotorSet[0].setRotorPosition(rotorPosition1)
-rotorSet[1].setRotorPosition(rotorPosition2)
-rotorSet[2].setRotorPosition(rotorPosition3)
-plugboard1.setCharacterPairs(plugboardPairs)
-print("output text: " + enigma.enigma(encryptedText, rotorSet[0], rotorSet[1], rotorSet[2], plugboard1, reflector1))
+
+for i in range(len(bestRotorPositions)):
+    print(i)
+    print(bestRotorPositions[i])
+
+for i in bestRotorPositions:
+    rotorSet[0].setRotorPosition(i[0][0])
+    rotorSet[1].setRotorPosition(i[0][1])
+    rotorSet[2].setRotorPosition(i[0][2])
+    decryptedText = enigma.enigma(encryptedText, rotorSet[0], rotorSet[1], rotorSet[2], plugboard1, reflector1)
+    print(decryptedText)

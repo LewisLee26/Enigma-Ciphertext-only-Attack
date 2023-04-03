@@ -1,4 +1,9 @@
 import os
+import time
+import tensorflow_hub as hub
+import tensorflow_text as text
+from official.nlp import optimization  # to create AdamW optimizer
+
 # removing tensorflow warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -24,20 +29,7 @@ regex = re.compile('[^a-z]')
 # Get the current working directory
 cwd = os.getcwd()
 
-# creating a vocabulary of all letters used within the dataset
-decryptedText = ""
-for filename in os.listdir(os.getcwd() + "/dataset/train/decryption/"):
-    with open(os.path.join(os.getcwd() + "/dataset/train/decryption/", filename), 'r') as f:  # open in readonly mode
-        decryptedText += f.read()
-
-vocab = sorted(set(decryptedText))
-
-char2idx = {char: i for i, char in enumerate(vocab)}
-idx2char = np.array(vocab)
-text_encoded = [char2idx[c] for c in decryptedText]
-text_encoded = np.array(text_encoded)
-
-batch_size = 32
+batch_size = 128
 seed = 42
 
 # getting the datasets
@@ -60,7 +52,7 @@ raw_test_ds = tf.keras.utils.text_dataset_from_directory(
     batch_size=batch_size)
 
 
-# separating the input into a array of individual characters
+# separating the input into an array of individual characters
 @tf.keras.utils.register_keras_serializable()
 def split_chars(input_data):
     s = tf.strings.regex_replace(input_data, ' ', '')
@@ -78,17 +70,6 @@ encoder = tf.keras.layers.TextVectorization(
     split=split_chars)
 encoder.adapt(raw_train_ds.map(lambda text, label: text))
 
-# creating the layers in the model
-# model = tf.keras.Sequential([
-#     encoder,
-#     tf.keras.layers.Embedding(len(encoder.get_vocabulary()), 64, mask_zero=True),
-#     tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64, return_sequences=True)),
-#     tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(32)),
-#     tf.keras.layers.Dense(64, activation='relu'),
-#     tf.keras.layers.Dropout(0.5),
-#     tf.keras.layers.Dense(1)
-# ])
-
 model = tf.keras.Sequential([
     encoder,
     tf.keras.layers.Embedding(
@@ -97,12 +78,25 @@ model = tf.keras.Sequential([
         mask_zero=True),
     tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64)),
     tf.keras.layers.Dense(64, activation='relu'),
-    tf.keras.layers.Dense(1)
+    tf.keras.layers.Dense(1, activation=tf.nn.sigmoid)
 ])
 
-model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
-              optimizer=tf.keras.optimizers.Adam(1e-4),
-              metrics=['accuracy'])
+# def build_classifier_model():
+#   text_input = tf.keras.layers.Input(shape=(), dtype=tf.string, name='text')
+#   preprocessing_layer = hub.KerasLayer(tfhub_handle_preprocess, name='preprocessing')
+#   encoder_inputs = preprocessing_layer(text_input)
+#   encoder = hub.KerasLayer(tfhub_handle_encoder, trainable=True, name='BERT_encoder')
+#   outputs = encoder(encoder_inputs)
+#   net = outputs['pooled_output']
+#   net = tf.keras.layers.Dropout(0.1)(net)
+#   net = tf.keras.layers.Dense(1, activation=None, name='classifier')(net)
+#   return tf.keras.Model(text_input, net)
+#
+# model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+#               optimizer=tf.keras.optimizers.Adam(1e-4),
+#               metrics=['accuracy'])
+
+start = time.time()
 
 # training the model
 history = model.fit(raw_train_ds,
@@ -110,6 +104,9 @@ history = model.fit(raw_train_ds,
                     batch_size=batch_size,
                     validation_data=raw_val_ds,
                     validation_steps=30)
+
+end = time.time()
+print("time: " + str(end - start))
 
 # summary of the models performance
 test_loss, test_acc = model.evaluate(raw_test_ds)
