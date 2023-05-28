@@ -1,12 +1,12 @@
-from pmaw import PushshiftAPI
-import praw
-import re
+import requests
+import pandas as pd
 import enigma
 import random
-import os
-import math
+import time
+import pyarrow as pa
+import pyarrow.parquet as pq
+import utils
 
-path = os.getcwd()
 
 rotor1 = enigma.Rotor(enigma.rotors["I"], 0)
 rotor2 = enigma.Rotor(enigma.rotors["II"], 0)
@@ -15,7 +15,7 @@ rotor4 = enigma.Rotor(enigma.rotors["IV"], 0)
 rotor5 = enigma.Rotor(enigma.rotors["V"], 0)
 
 rotors = [rotor1, rotor2, rotor3, rotor4, rotor5]
-plugboard1 = enigma.Plugboard("")
+plugboard1 = enigma.Plugboard()
 reflector1 = enigma.Reflector(enigma.reflectors["A"])
 
 
@@ -27,60 +27,68 @@ def encryptTextRandom(text):
     plugboard1.randomizeCharacterPairs()
     return enigma.enigma(text, rotors[0], rotors[1], rotors[2], plugboard1, reflector1)
 
+def parse(subreddit, after='', dataframe=pd.DataFrame):
+    
+    url_template = 'https://www.reddit.com/r/{}/top.json?t=all{}'
+        
+    headers = {
+        'User-Agent': 'BlankBot'
+    }
 
-umlaut = ["ä", "ü", "ö"]
-replaceUmlaut = ["ae", "ue", "oe"]
-eszett = "ß"
-replaceEszett = "ss"
-regexEszett = re.compile('ß')
+    params = f'&after={after}' if after else ''
 
+    url = url_template.format(subreddit, params)
+    response = requests.get(url, headers = headers)
 
-def standardizeText(text):
-    text = re.sub(r'http\S+', '', text)
-    text = text.lower()
-    for i in range(len(umlaut)):
-        regexUmlaut = re.compile(umlaut[i])
-        text = regexUmlaut.sub(replaceUmlaut[i], text)
-    text = regexEszett.sub(replaceEszett, text)
-    text = re.sub('[^a-z]', '', text)
-    return text
+    if response.ok:
+        data = response.json()['data']
+        for post in data['children']:
+            pdata = post['data']
+            post_id = pdata['id']
+            if pdata['selftext'] == '[removed]' or pdata['selftext'] == '[deleted]' or pdata['selftext'] == '':
+                continue
+            selftext = pdata.get('selftext')
+            print('ID: '+post_id)
 
+            dataframe = pd.concat([dataframe, pd.DataFrame([{'Text':utils.standardizeText(selftext.strip()), 'Encryption':False}])], ignore_index=True)
+            dataframe = pd.concat([dataframe, pd.DataFrame([{'Text':encryptTextRandom(utils.standardizeText(selftext.strip())), 'Encryption':True}])], ignore_index=True)
 
-reddit = praw.Reddit(
-    client_id="-Acse7KhzRcSv0hEt6Znfg",
-    client_secret="OdxeAEFzN5cvFWEIvBVXvEq-PyFRaw",
-    user_agent="WebScrapper"
-)
+        return data['after'], dataframe
+    else:
+        print(f'Error {response.status_code}')
+        return None
 
-reddit.read_only = True
+def main():
+    start_time = time.time()
 
-api = PushshiftAPI(praw=reddit)
+    df = pd.DataFrame(columns=['Text', 'Encryption'])
 
-subreddit = 'Kopiernudeln'
+    subreddits = ['de', 'Austria','de_IAmA', 'duschgedanken', 'GuteNachrichten', 'HeuteLernteIch', 'Lagerfeuer', 
+                 'Schreibkunst', 'Ratschlag', 'wortwitzkasse', 'WriteStreakGerman', 'buecher', 'wandern', 'radsport', 
+                'Kampfsport', 'arbeitsleben', 'de_EDV', 'depression_de', 'einfach_posten', 'Eltern', 'egenbogen', 
+                'Erasmus', 'Finanzen', 'germantrans', 'LegaladviceGerman', 'lehrerzimmer', 'recht', 'schwanger', 
+                 'Weibsvolk', 'Kopiernudeln']
+    
+    for i in subreddits:
+        print(i)
+        after = ''
+        while True:
+            after, df = parse(i, after, df)
+            if not after:
+                break
+        print('Dataframe Size: ' + str(df['Text'].size))
+        print()
+    
+    end_time = time.time()
+    print('Time: ' + str(end_time-start_time))
 
-submissions = list(api.search_submissions(subreddit=subreddit, limit=None))
-print(len(submissions))
+    print('Dataframe Size: ' + str(df['Text'].size))
 
-trainSplit = 0.8
-testSplit = 1 - trainSplit
+    table = pa.Table.from_pandas(df)
+    pq.write_table(table, 'dataset/germanEncryptionRaw.parquet')
 
-for i in range(math.floor(len(submissions)*trainSplit)):
-    if submissions[i]['selftext'] == '[removed]' or submissions[i]['selftext'] == '[deleted]':
-        continue
-    submissionText = standardizeText(submissions[i]['selftext'])
-    with open(path+"/dataset/train/decrypted/" + str(i) + ".txt", "w") as f:
-        f.write(submissionText)
-    with open(path+"/dataset/train/encrypted/" + str(i) + ".txt", "w") as f:
-        f.write(encryptTextRandom(submissionText))
-    print(i, end="\r")
-
-trainOffset = math.floor(len(submissions)*trainSplit)
-for i in range(math.floor(len(submissions)*testSplit)):
-    if submissions[i]['selftext'] == '[removed]' or submissions[i]['selftext'] == '[deleted]':
-        continue
-    submissionText = standardizeText(submissions[i]['selftext'])
-    with open(path+"/dataset/test/decrypted/" + str(i) + ".txt", "w") as f:
-        f.write(submissionText)
-    with open(path+"/dataset/test/encrypted/" + str(i) + ".txt", "w") as f:
-        f.write(encryptTextRandom(submissionText))
-    print(i+trainOffset, end="\r")
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Exiting...')

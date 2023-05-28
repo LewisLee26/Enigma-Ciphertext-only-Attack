@@ -1,0 +1,193 @@
+2023-05-27 11:00:32,817 INFO    StreamThr :24964 [internal.py:wandb_internal():86] W&B internal server running at pid: 24964, started at: 2023-05-27 11:00:32.817688
+2023-05-27 11:00:32,819 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: status
+2023-05-27 11:00:32,823 INFO    WriterThread:24964 [datastore.py:open_for_write():85] open: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\run-3biwzb30.wandb
+2023-05-27 11:00:32,823 DEBUG   SenderThread:24964 [sender.py:send():375] send: header
+2023-05-27 11:00:32,824 DEBUG   SenderThread:24964 [sender.py:send():375] send: run
+2023-05-27 11:00:33,179 INFO    SenderThread:24964 [dir_watcher.py:__init__():219] watching files in: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files
+2023-05-27 11:00:33,179 INFO    SenderThread:24964 [sender.py:_start_run_threads():1124] run started: 3biwzb30 with start time 1685181632.819686
+2023-05-27 11:00:33,179 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:00:33,179 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:00:33,180 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: check_version
+2023-05-27 11:00:33,181 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: check_version
+2023-05-27 11:00:33,253 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: run_start
+2023-05-27 11:00:33,276 DEBUG   HandlerThread:24964 [system_info.py:__init__():31] System info init
+2023-05-27 11:00:33,278 DEBUG   HandlerThread:24964 [system_info.py:__init__():46] System info init done
+2023-05-27 11:00:33,278 INFO    HandlerThread:24964 [system_monitor.py:start():181] Starting system monitor
+2023-05-27 11:00:33,278 INFO    SystemMonitor:24964 [system_monitor.py:_start():145] Starting system asset monitoring threads
+2023-05-27 11:00:33,278 INFO    HandlerThread:24964 [system_monitor.py:probe():201] Collecting system info
+2023-05-27 11:00:33,283 INFO    SystemMonitor:24964 [interfaces.py:start():190] Started cpu monitoring
+2023-05-27 11:00:33,283 INFO    SystemMonitor:24964 [interfaces.py:start():190] Started disk monitoring
+2023-05-27 11:00:33,284 INFO    SystemMonitor:24964 [interfaces.py:start():190] Started gpu monitoring
+2023-05-27 11:00:33,290 INFO    SystemMonitor:24964 [interfaces.py:start():190] Started memory monitoring
+2023-05-27 11:00:33,299 INFO    SystemMonitor:24964 [interfaces.py:start():190] Started network monitoring
+2023-05-27 11:00:33,307 DEBUG   HandlerThread:24964 [system_info.py:probe():195] Probing system
+2023-05-27 11:00:33,308 DEBUG   HandlerThread:24964 [git.py:repo():40] git repository is invalid
+2023-05-27 11:00:33,308 DEBUG   HandlerThread:24964 [system_info.py:probe():240] Probing system done
+2023-05-27 11:00:33,308 DEBUG   HandlerThread:24964 [system_monitor.py:probe():210] {'os': 'Windows-10-10.0.22621-SP0', 'python': '3.9.13', 'heartbeatAt': '2023-05-27T10:00:33.307248', 'startedAt': '2023-05-27T10:00:32.796804', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': 'c:\\MyStuff\\CodingProjects\\enigmaCOA\\trainModelLogisticRegression.py', 'codePath': 'trainModelLogisticRegression.py', 'host': 'LAPTOP-3C0MHMSA', 'username': 'lewis', 'executable': 'C:\\Users\\lewis\\AppData\\Local\\Programs\\Python\\Python39\\python.exe', 'cpu_count': 8, 'cpu_count_logical': 16, 'cpu_freq': {'current': 2652.0, 'min': 0.0, 'max': 3301.0}, 'cpu_freq_per_core': [{'current': 2652.0, 'min': 0.0, 'max': 3301.0}], 'disk': {'total': 930.7190589904785, 'used': 437.0760383605957}, 'gpu': 'NVIDIA GeForce RTX 3060 Laptop GPU', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 3060 Laptop GPU', 'memory_total': 6442450944}], 'memory': {'total': 15.406608581542969}}
+2023-05-27 11:00:33,308 INFO    HandlerThread:24964 [system_monitor.py:probe():211] Finished collecting system info
+2023-05-27 11:00:33,308 INFO    HandlerThread:24964 [system_monitor.py:probe():214] Publishing system info
+2023-05-27 11:00:33,308 DEBUG   HandlerThread:24964 [system_info.py:_save_pip():51] Saving list of pip packages installed into the current environment
+2023-05-27 11:00:33,308 DEBUG   HandlerThread:24964 [system_info.py:_save_pip():67] Saving pip packages done
+2023-05-27 11:00:33,309 INFO    HandlerThread:24964 [system_monitor.py:probe():216] Finished publishing system info
+2023-05-27 11:00:33,313 DEBUG   SenderThread:24964 [sender.py:send():375] send: files
+2023-05-27 11:00:33,313 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-metadata.json with policy now
+2023-05-27 11:00:33,314 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:00:33,318 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: stop_status
+2023-05-27 11:00:33,319 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: stop_status
+2023-05-27 11:00:33,444 DEBUG   SenderThread:24964 [sender.py:send():375] send: telemetry
+2023-05-27 11:00:33,798 INFO    wandb-upload_0:24964 [upload_job.py:push():137] Uploaded file C:\Users\lewis\AppData\Local\Temp\tmpaxo3io_owandb\vmvv4ept-wandb-metadata.json
+2023-05-27 11:00:34,194 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_created():278] file/dir created: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\wandb-metadata.json
+2023-05-27 11:00:34,194 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_created():278] file/dir created: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\wandb-summary.json
+2023-05-27 11:00:34,194 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_created():278] file/dir created: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\requirements.txt
+2023-05-27 11:00:35,329 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:00:37,340 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:00:38,476 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: status_report
+2023-05-27 11:00:39,427 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:00:41,466 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:00:43,488 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:00:43,511 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: status_report
+2023-05-27 11:00:45,508 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:00:47,534 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:00:48,375 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: stop_status
+2023-05-27 11:00:48,376 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: stop_status
+2023-05-27 11:00:49,511 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: status_report
+2023-05-27 11:00:49,551 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:00:51,591 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:00:53,614 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:00:54,553 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: status_report
+2023-05-27 11:00:55,631 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:00:57,642 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:00:59,599 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: status_report
+2023-05-27 11:00:59,666 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:01,690 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:03,353 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: stop_status
+2023-05-27 11:01:03,354 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: stop_status
+2023-05-27 11:01:03,794 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:05,521 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: status_report
+2023-05-27 11:01:05,810 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:06,498 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_modified():295] file/dir modified: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\config.yaml
+2023-05-27 11:01:07,829 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:09,849 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:10,784 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: status_report
+2023-05-27 11:01:11,868 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:13,883 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:15,857 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: status_report
+2023-05-27 11:01:15,905 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:17,917 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:18,600 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: stop_status
+2023-05-27 11:01:18,601 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: stop_status
+2023-05-27 11:01:19,754 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:19,934 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:20,080 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:20,088 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:20,088 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:20,091 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:20,403 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:20,404 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:20,404 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:20,404 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:20,625 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_modified():295] file/dir modified: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\wandb-summary.json
+2023-05-27 11:01:20,625 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_created():278] file/dir created: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\output.log
+2023-05-27 11:01:20,739 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:20,740 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:20,741 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:20,741 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:21,052 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:21,052 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:21,053 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:21,053 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: status_report
+2023-05-27 11:01:21,054 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:21,378 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:21,379 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:21,379 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:21,380 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:21,627 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_modified():295] file/dir modified: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\wandb-summary.json
+2023-05-27 11:01:21,719 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:21,720 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:21,720 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:21,721 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:21,950 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:22,038 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:22,039 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:22,039 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:22,040 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:22,368 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:22,370 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:22,370 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:22,372 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:22,641 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_modified():295] file/dir modified: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\output.log
+2023-05-27 11:01:22,641 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_modified():295] file/dir modified: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\wandb-summary.json
+2023-05-27 11:01:22,691 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:22,692 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:22,692 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:22,693 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:23,031 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:23,032 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:23,032 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:23,033 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:23,362 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:23,363 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:23,363 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:23,364 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:23,655 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_modified():295] file/dir modified: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\wandb-summary.json
+2023-05-27 11:01:23,707 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:23,708 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:23,708 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:23,709 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:23,981 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:24,039 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:24,040 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:24,040 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:24,041 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:24,359 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:24,359 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:24,360 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:24,361 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:24,670 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_modified():295] file/dir modified: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\output.log
+2023-05-27 11:01:24,671 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_modified():295] file/dir modified: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\wandb-summary.json
+2023-05-27 11:01:24,708 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:24,709 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:24,709 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:24,711 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:25,034 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:25,035 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:25,035 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:25,036 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:25,410 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:25,410 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:25,411 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:25,411 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:25,673 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_modified():295] file/dir modified: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\wandb-summary.json
+2023-05-27 11:01:25,764 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:25,765 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:25,766 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:25,776 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:25,997 ERROR   gpu       :24964 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-27 11:01:26,103 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:26,104 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:26,104 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:26,104 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: status_report
+2023-05-27 11:01:26,105 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:26,452 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:26,452 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:26,453 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:26,454 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:26,675 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_modified():295] file/dir modified: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\output.log
+2023-05-27 11:01:26,675 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_modified():295] file/dir modified: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\wandb-summary.json
+2023-05-27 11:01:26,793 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:26,794 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:26,794 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:26,796 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:27,130 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:27,131 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:27,131 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:27,133 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:27,461 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:27,462 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:27,462 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:27,463 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-27 11:01:27,679 INFO    Thread-16 :24964 [dir_watcher.py:_on_file_modified():295] file/dir modified: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230527_110032-3biwzb30\files\wandb-summary.json
+2023-05-27 11:01:27,807 DEBUG   HandlerThread:24964 [handler.py:handle_request():144] handle_request: partial_history
+2023-05-27 11:01:27,808 DEBUG   SenderThread:24964 [sender.py:send():375] send: history
+2023-05-27 11:01:27,809 DEBUG   SenderThread:24964 [sender.py:send_request():402] send_request: summary_record
+2023-05-27 11:01:27,809 INFO    SenderThread:24964 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end

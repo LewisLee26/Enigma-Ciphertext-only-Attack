@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "c:\MyStuff\CodingProjects\enigmaCOA\trainModelLogisticRegression.py", line 78, in <module>
+    df = pd.read_parquet(parquet_file, engine='auto')
+  File "C:\Users\lewis\AppData\Local\Programs\Python\Python39\lib\site-packages\pandas\io\parquet.py", line 509, in read_parquet
+    return impl.read(
+  File "C:\Users\lewis\AppData\Local\Programs\Python\Python39\lib\site-packages\pandas\io\parquet.py", line 220, in read
+    path_or_handle, handles, kwargs["filesystem"] = _get_path_or_handle(
+  File "C:\Users\lewis\AppData\Local\Programs\Python\Python39\lib\site-packages\pandas\io\parquet.py", line 110, in _get_path_or_handle
+    handles = get_handle(
+  File "C:\Users\lewis\AppData\Local\Programs\Python\Python39\lib\site-packages\pandas\io\common.py", line 868, in get_handle
+    handle = open(handle, ioargs.mode)
+FileNotFoundError: [Errno 2] No such file or directory: 'models/germanEncryption.parquet'

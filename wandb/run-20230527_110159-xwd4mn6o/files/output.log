@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "c:\MyStuff\CodingProjects\enigmaCOA\trainModelLogisticRegression.py", line 72, in <module>
+    dataset.binaryLabels()
+  File "c:\MyStuff\CodingProjects\enigmaCOA\trainModelLogisticRegression.py", line 61, in binaryLabels
+    self.y.loc[(self.y['Encryption'] == True)] = 1
+  File "C:\Users\lewis\AppData\Local\Programs\Python\Python39\lib\site-packages\pandas\core\series.py", line 1007, in __getitem__
+    return self._get_value(key)
+  File "C:\Users\lewis\AppData\Local\Programs\Python\Python39\lib\site-packages\pandas\core\series.py", line 1116, in _get_value
+    loc = self.index.get_loc(label)
+  File "C:\Users\lewis\AppData\Local\Programs\Python\Python39\lib\site-packages\pandas\core\indexes\range.py", line 349, in get_loc
+    raise KeyError(key)
+KeyError: 'Encryption'

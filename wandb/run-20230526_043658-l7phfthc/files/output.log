@@ -1,0 +1,15 @@
+c:\MyStuff\CodingProjects\enigmaCOA\trainModelLogisticRegression.py:70: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  self.y.loc[self.y.index[i]] = 0
+epoch: 10, loss = 0.8202
+epoch: 20, loss = 0.8323
+epoch: 30, loss = 0.9379
+epoch: 40, loss = 0.8529
+epoch: 50, loss = 0.8583
+epoch: 60, loss = 0.8691
+epoch: 70, loss = 0.8318
+epoch: 80, loss = 0.5603
+epoch: 90, loss = 0.7021
+epoch: 100, loss = 0.5709
+accuracy = 0.8209

@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "c:\Users\lewis\Desktop\New folder\enigmaCOA\trainModel.py", line 45, in <module>
+    dataset = CustomTextDataset()
+  File "c:\Users\lewis\Desktop\New folder\enigmaCOA\trainModel.py", line 34, in __init__
+    xy = np.loadtxt('./dataset/enigmaData.csv', delimiter=",", dtype=np.unicode, skiprows=1)
+  File "C:\Users\lewis\AppData\Local\Programs\Python\Python39\lib\site-packages\numpy\__init__.py", line 284, in __getattr__
+    raise AttributeError("module {!r} has no attribute "
+AttributeError: module 'numpy' has no attribute 'unicode'

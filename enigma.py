@@ -28,7 +28,6 @@ class Connector:
         self.characterPairs = []
 
 
-# class for the rotor
 class Rotor(Connector):
     def __init__(self, characterPairs, rotorPosition):
         super().__init__(characterPairs)
@@ -64,8 +63,7 @@ class Rotor(Connector):
 
 
 class Plugboard(Connector):
-    def __init__(self, characterPairs):
-        super().__init__(characterPairs)
+    def __init__(self):
         self.characterPairs = alphabet
 
     # creates a random number of random plugboard connections
@@ -159,19 +157,20 @@ def enigma(inputText, rotorSlot1, rotorSlot2, rotorSlot3, plugboard, reflector):
 
     # splitting the string into an array of characters
     arrayText = [char for char in inputText]
+    
 
     outputArrayText = []
     for i in range(0, len(arrayText)):
         # one pass through the machine
         currentCharacter = arrayText[i]
         currentCharacter = plugboard.returnCharacterPair(arrayText[i])
-        currentCharacter = rotorSlot3.returnCharacterPair(currentCharacter, True)
-        currentCharacter = rotorSlot2.returnCharacterPair(currentCharacter, True)
-        currentCharacter = rotorSlot1.returnCharacterPair(currentCharacter, True)
+        rotorSlots = [rotorSlot3, rotorSlot2, rotorSlot1]
+        for j in rotorSlots:
+            currentCharacter = j.returnCharacterPair(currentCharacter, True)
         currentCharacter = reflector.returnCharacterPair(currentCharacter)
-        currentCharacter = rotorSlot1.returnCharacterPair(currentCharacter, False)
-        currentCharacter = rotorSlot2.returnCharacterPair(currentCharacter, False)
-        currentCharacter = rotorSlot3.returnCharacterPair(currentCharacter, False)
+        rotorSlots = [rotorSlot1, rotorSlot2, rotorSlot3]
+        for j in rotorSlots:
+            currentCharacter = j.returnCharacterPair(currentCharacter, False)
         currentCharacter = plugboard.returnCharacterPair(currentCharacter)
 
         outputArrayText.append(currentCharacter)

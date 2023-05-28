@@ -1,0 +1,42 @@
+wandb_version: 1
+
+num_epochs:
+  desc: null
+  value: 200
+learning_rate:
+  desc: null
+  value: 0.01
+architecture:
+  desc: null
+  value: LogisticRegression
+dataset:
+  desc: null
+  value: germanEncryption
+_wandb:
+  desc: null
+  value:
+    python_version: 3.9.13
+    cli_version: 0.15.3
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1685181720.020184
+    t:
+      1:
+      - 1
+      - 5
+      - 53
+      - 55
+      2:
+      - 1
+      - 5
+      - 53
+      - 55
+      3:
+      - 16
+      - 23
+      4: 3.9.13
+      5: 0.15.3
+      8:
+      - 3
+      - 5

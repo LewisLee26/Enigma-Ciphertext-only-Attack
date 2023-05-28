@@ -1,0 +1,42 @@
+2023-05-26 05:07:30,196 INFO    StreamThr :11912 [internal.py:wandb_internal():86] W&B internal server running at pid: 11912, started at: 2023-05-26 05:07:30.195861
+2023-05-26 05:07:30,199 DEBUG   HandlerThread:11912 [handler.py:handle_request():144] handle_request: status
+2023-05-26 05:07:30,202 INFO    WriterThread:11912 [datastore.py:open_for_write():85] open: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230526_050730-mc9s1vqs\run-mc9s1vqs.wandb
+2023-05-26 05:07:30,203 DEBUG   SenderThread:11912 [sender.py:send():375] send: header
+2023-05-26 05:07:30,203 DEBUG   SenderThread:11912 [sender.py:send():375] send: run
+2023-05-26 05:07:30,513 INFO    SenderThread:11912 [dir_watcher.py:__init__():219] watching files in: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230526_050730-mc9s1vqs\files
+2023-05-26 05:07:30,513 INFO    SenderThread:11912 [sender.py:_start_run_threads():1124] run started: mc9s1vqs with start time 1685074050.199673
+2023-05-26 05:07:30,513 DEBUG   SenderThread:11912 [sender.py:send_request():402] send_request: summary_record
+2023-05-26 05:07:30,514 INFO    SenderThread:11912 [sender.py:_save_file():1378] saving file wandb-summary.json with policy end
+2023-05-26 05:07:30,515 DEBUG   HandlerThread:11912 [handler.py:handle_request():144] handle_request: check_version
+2023-05-26 05:07:30,515 DEBUG   SenderThread:11912 [sender.py:send_request():402] send_request: check_version
+2023-05-26 05:07:30,605 DEBUG   HandlerThread:11912 [handler.py:handle_request():144] handle_request: run_start
+2023-05-26 05:07:30,630 DEBUG   HandlerThread:11912 [system_info.py:__init__():31] System info init
+2023-05-26 05:07:30,630 DEBUG   HandlerThread:11912 [system_info.py:__init__():46] System info init done
+2023-05-26 05:07:30,630 INFO    HandlerThread:11912 [system_monitor.py:start():181] Starting system monitor
+2023-05-26 05:07:30,630 INFO    SystemMonitor:11912 [system_monitor.py:_start():145] Starting system asset monitoring threads
+2023-05-26 05:07:30,630 INFO    HandlerThread:11912 [system_monitor.py:probe():201] Collecting system info
+2023-05-26 05:07:30,635 INFO    SystemMonitor:11912 [interfaces.py:start():190] Started cpu monitoring
+2023-05-26 05:07:30,635 INFO    SystemMonitor:11912 [interfaces.py:start():190] Started disk monitoring
+2023-05-26 05:07:30,636 INFO    SystemMonitor:11912 [interfaces.py:start():190] Started gpu monitoring
+2023-05-26 05:07:30,642 INFO    SystemMonitor:11912 [interfaces.py:start():190] Started memory monitoring
+2023-05-26 05:07:30,650 INFO    SystemMonitor:11912 [interfaces.py:start():190] Started network monitoring
+2023-05-26 05:07:30,657 DEBUG   HandlerThread:11912 [system_info.py:probe():195] Probing system
+2023-05-26 05:07:30,658 DEBUG   HandlerThread:11912 [git.py:repo():40] git repository is invalid
+2023-05-26 05:07:30,658 DEBUG   HandlerThread:11912 [system_info.py:probe():240] Probing system done
+2023-05-26 05:07:30,658 DEBUG   HandlerThread:11912 [system_monitor.py:probe():210] {'os': 'Windows-10-10.0.22621-SP0', 'python': '3.9.13', 'heartbeatAt': '2023-05-26T04:07:30.657800', 'startedAt': '2023-05-26T04:07:30.172631', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': 'c:\\MyStuff\\CodingProjects\\enigmaCOA\\trainModelLogisticRegression.py', 'codePath': 'trainModelLogisticRegression.py', 'host': 'LAPTOP-3C0MHMSA', 'username': 'lewis', 'executable': 'C:\\Users\\lewis\\AppData\\Local\\Programs\\Python\\Python39\\python.exe', 'cpu_count': 8, 'cpu_count_logical': 16, 'cpu_freq': {'current': 2652.0, 'min': 0.0, 'max': 3301.0}, 'cpu_freq_per_core': [{'current': 2652.0, 'min': 0.0, 'max': 3301.0}], 'disk': {'total': 930.7190589904785, 'used': 433.733943939209}, 'gpu': 'NVIDIA GeForce RTX 3060 Laptop GPU', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 3060 Laptop GPU', 'memory_total': 6442450944}], 'memory': {'total': 15.406608581542969}}
+2023-05-26 05:07:30,658 INFO    HandlerThread:11912 [system_monitor.py:probe():211] Finished collecting system info
+2023-05-26 05:07:30,658 INFO    HandlerThread:11912 [system_monitor.py:probe():214] Publishing system info
+2023-05-26 05:07:30,658 DEBUG   HandlerThread:11912 [system_info.py:_save_pip():51] Saving list of pip packages installed into the current environment
+2023-05-26 05:07:30,659 DEBUG   HandlerThread:11912 [system_info.py:_save_pip():67] Saving pip packages done
+2023-05-26 05:07:30,660 INFO    HandlerThread:11912 [system_monitor.py:probe():216] Finished publishing system info
+2023-05-26 05:07:30,664 DEBUG   SenderThread:11912 [sender.py:send():375] send: files
+2023-05-26 05:07:30,664 INFO    SenderThread:11912 [sender.py:_save_file():1378] saving file wandb-metadata.json with policy now
+2023-05-26 05:07:30,665 ERROR   gpu       :11912 [interfaces.py:monitor():144] Failed to sample metric: Not Supported
+2023-05-26 05:07:30,670 DEBUG   HandlerThread:11912 [handler.py:handle_request():144] handle_request: stop_status
+2023-05-26 05:07:30,670 DEBUG   SenderThread:11912 [sender.py:send_request():402] send_request: stop_status
+2023-05-26 05:07:30,797 DEBUG   SenderThread:11912 [sender.py:send():375] send: telemetry
+2023-05-26 05:07:31,162 INFO    wandb-upload_0:11912 [upload_job.py:push():137] Uploaded file C:\Users\lewis\AppData\Local\Temp\tmpxqtalng7wandb\06jo0d23-wandb-metadata.json
+2023-05-26 05:07:31,525 INFO    Thread-16 :11912 [dir_watcher.py:_on_file_created():278] file/dir created: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230526_050730-mc9s1vqs\files\requirements.txt
+2023-05-26 05:07:31,525 INFO    Thread-16 :11912 [dir_watcher.py:_on_file_created():278] file/dir created: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230526_050730-mc9s1vqs\files\wandb-summary.json
+2023-05-26 05:07:31,525 INFO    Thread-16 :11912 [dir_watcher.py:_on_file_created():278] file/dir created: C:\MyStuff\CodingProjects\enigmaCOA\wandb\run-20230526_050730-mc9s1vqs\files\wandb-metadata.json
+2023-05-26 05:07:32,693 ERROR   gpu       :11912 [interfaces.py:monitor():144] Failed to sample metric: Not Supported

@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "c:\Users\lewis\Desktop\New folder\enigmaCOA\trainModel.py", line 45, in <module>
+    dataset = CustomTextDataset()
+  File "c:\Users\lewis\Desktop\New folder\enigmaCOA\trainModel.py", line 34, in __init__
+    xy = np.loadtxt('./dataset/enigmaDataset.csv', delimiter=",", dtype=np.float32, skiprows=1)
+  File "C:\Users\lewis\AppData\Local\Programs\Python\Python39\lib\site-packages\numpy\lib\npyio.py", line 1348, in loadtxt
+    arr = _read(fname, dtype=dtype, comment=comment, delimiter=delimiter,
+  File "C:\Users\lewis\AppData\Local\Programs\Python\Python39\lib\site-packages\numpy\lib\npyio.py", line 975, in _read
+    fh = np.lib._datasource.open(fname, 'rt', encoding=encoding)
+  File "C:\Users\lewis\AppData\Local\Programs\Python\Python39\lib\site-packages\numpy\lib\_datasource.py", line 193, in open
+    return ds.open(path, mode, encoding=encoding, newline=newline)
+  File "C:\Users\lewis\AppData\Local\Programs\Python\Python39\lib\site-packages\numpy\lib\_datasource.py", line 533, in open
+    raise FileNotFoundError(f"{path} not found.")
+FileNotFoundError: ./dataset/enigmaDataset.csv not found.
