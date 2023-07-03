@@ -1,6 +1,6 @@
 import requests
 import pandas as pd
-import enigma
+import enigmacpp
 import random
 import time
 import pyarrow as pa
@@ -8,15 +8,15 @@ import pyarrow.parquet as pq
 import utils
 
 
-rotor1 = enigma.Rotor(enigma.rotors["I"], 0)
-rotor2 = enigma.Rotor(enigma.rotors["II"], 0)
-rotor3 = enigma.Rotor(enigma.rotors["III"], 0)
-rotor4 = enigma.Rotor(enigma.rotors["IV"], 0)
-rotor5 = enigma.Rotor(enigma.rotors["V"], 0)
+rotor1 = enigmacpp.Rotor(enigmacpp.rotors[0], 0)
+rotor2 = enigmacpp.Rotor(enigmacpp.rotors[1], 0)
+rotor3 = enigmacpp.Rotor(enigmacpp.rotors[2], 0)
+rotor4 = enigmacpp.Rotor(enigmacpp.rotors[3], 0)
+rotor5 = enigmacpp.Rotor(enigmacpp.rotors[4], 0)
 
 rotors = [rotor1, rotor2, rotor3, rotor4, rotor5]
-plugboard1 = enigma.Plugboard()
-reflector1 = enigma.Reflector(enigma.reflectors["A"])
+plugboard1 = enigmacpp.Plugboard()
+reflector1 = enigmacpp.Reflector(enigmacpp.reflectors[0])
 
 
 def encryptTextRandom(text):
@@ -25,7 +25,7 @@ def encryptTextRandom(text):
     rotors[1].setRotorPosition(random.randint(0,25))
     rotors[2].setRotorPosition(random.randint(0,25))
     plugboard1.randomizeCharacterPairs()
-    return enigma.enigma(text, rotors[0], rotors[1], rotors[2], plugboard1, reflector1)
+    return enigmacpp.enigma(text, rotors[0], rotors[1], rotors[2], plugboard1, reflector1)
 
 def parse(subreddit, after='', dataframe=pd.DataFrame):
     
