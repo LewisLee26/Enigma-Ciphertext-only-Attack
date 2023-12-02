@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "c:\Users\lewis\Desktop\New folder\enigmaCOA\trainModel.py", line 45, in <module>
-    dataset = CustomTextDataset()
-  File "c:\Users\lewis\Desktop\New folder\enigmaCOA\trainModel.py", line 34, in __init__
-    xy = np.loadtxt('./dataset/enigmaDataset.csv', delimiter=",", dtypre=np.float32, skiprows=1)
-TypeError: loadtxt() got an unexpected keyword argument 'dtypre'

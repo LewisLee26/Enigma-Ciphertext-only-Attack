@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "c:\Users\lewis\Desktop\New folder\enigmaCOA\trainModel.py", line 45, in <module>
-    dataset = CustomTextDataset()
-  File "c:\Users\lewis\Desktop\New folder\enigmaCOA\trainModel.py", line 35, in __init__
-    self.x=torch.from_numpy(xy[:,1:])
-TypeError: can't convert np.ndarray of type numpy.str_. The only supported types are: float64, float32, float16, complex64, complex128, int64, int32, int16, int8, uint8, and bool.

@@ -81,7 +81,7 @@ alphabet = list(alphabet)
 for i in range(100):
    rand_text += random.choice(alphabet)
 
-input_text = rand_text
+# input_text = rand_text
 input_text = standardize_text(german_text)
 
 with torch.no_grad():
