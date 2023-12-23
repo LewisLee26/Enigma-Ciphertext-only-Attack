@@ -4,7 +4,10 @@ from torch.optim import AdamW
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, get_scheduler
 from datasets import load_from_disk
 from tqdm.auto import tqdm
-import evaluate
+from sklearn.metrics import accuracy_score
+import wandb
+
+wandb.init(project="Enigma Ciphertext-only Attack")
 
 
 # Define a character-level tokenizer
@@ -59,14 +62,18 @@ def loadDataset(path, batch_size, data_cutoff, shuffle):
     return dataloader
 
 
-train_dataloader = loadDataset(r"dataset\enigma_binary_classification_en_8_plugs\train",
-                               batch_size=10,
-                               data_cutoff=None,
+batch_size = 10
+
+wandb.config.update({"batch_size": batch_size})
+
+train_dataloader = loadDataset(r"dataset\enigma_binary_classification_en_0-13_plugs\train",
+                               batch_size=batch_size,
+                               data_cutoff=1000,
                                shuffle=True,
                                )
 
-test_dataloader = loadDataset(r"dataset\enigma_binary_classification_en_8_plugs\test",
-                              batch_size=10,
+test_dataloader = loadDataset(r"dataset\enigma_binary_classification_en_0-13_plugs\test",
+                              batch_size=batch_size,
                               data_cutoff=None,
                               shuffle=False,
                               )
@@ -78,7 +85,7 @@ optimizer = AdamW(model.parameters(), lr=1e-5)
 num_epochs = 3
 num_training_steps = num_epochs * len(train_dataloader)
 lr_scheduler = get_scheduler(
-    name="linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps
+    name="linear", optimizer=optimizer, num_warmup_steps=2, num_training_steps=num_training_steps
 )
 
 train_pbar = tqdm(range(num_training_steps), desc="Training loss: None")
@@ -103,15 +110,20 @@ for epoch in range(num_epochs):
         train_pbar.set_description(f"Epoch: {epoch+1} - Training loss: {running_loss/(i+1):.5f}")
         train_pbar.update(1)
 
-# model.save_to_disk(r"model/enigma_binary_classification_en_1")
-model.save_pretrained(r"model/enigma_binary_classification_en_1")
+        wandb.log({"training_loss": loss.item()})
+        
+
+model.save_pretrained(r"model/enigma_binary_classification_en_0-13_plugs")
 
 # Test the model
-metric = evaluate.load("accuracy")
+
+all_predictions = []
+all_labels = []
+
 model.eval()
 
 test_pbar = tqdm(range(len(test_dataloader)), desc="Testing accuracy: None")
-for batch in test_dataloader:
+for i, batch in enumerate(test_dataloader):
     input_ids, attention_mask, labels = batch
     input_ids, attention_mask, labels = input_ids.to(device), attention_mask.to(device), labels.to(device)
     with torch.no_grad():
@@ -120,12 +132,21 @@ for batch in test_dataloader:
     logits = outputs.logits
     predictions = torch.argmax(logits, dim=-1)
 
-    metric.add_batch(predictions=predictions, references=labels)
 
-    result = metric.compute()
-    test_pbar.set_description(f"Testing accuracy: {result['accuracy']}")
+    all_predictions.extend(predictions.cpu().numpy())
+    all_labels.extend(labels.cpu().numpy())
+
+    if i % 100 == 0:
+        accuracy = accuracy_score(all_labels, all_predictions)
+        test_pbar.set_description(f"Testing accuracy: {accuracy:.5f}")
+    
+
     test_pbar.update(1)
 
+
+accuracy = accuracy_score(all_labels, all_predictions)
+
+print(f"Accuracy: {accuracy}")
 
 # while True:
 #     print()
