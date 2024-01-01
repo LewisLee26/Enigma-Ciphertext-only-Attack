@@ -34,8 +34,7 @@ def run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs,
 alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 wheels = [0, 1, 2, 3, 4]
 reflectors = [0, 1, 2]
-max_plugboard_pairs = 13
-num_plugboard_pairs = 13
+max_plugboard_pairs = 2
 def encode_text(text):
     wheel_order = random.sample(wheels, 3)
     reflector = random.choice(reflectors)
@@ -53,8 +52,8 @@ def encode_text(text):
         reflector = random.choice(reflectors)
         ring_setting = random.choice(alphabet) + random.choice(alphabet) + random.choice(alphabet)
         wheel_pos = random.choice(alphabet) + random.choice(alphabet) + random.choice(alphabet) 
-        # plugboard_pairs = "".join(random.sample(alphabet, num_plugboard_pairs*2))
-        plugboard_pairs = "".join(random.sample(alphabet, random.randint(0,max_plugboard_pairs)*2))
+        plugboard_pairs = "".join(random.sample(alphabet, max_plugboard_pairs*2))
+        # plugboard_pairs = "".join(random.sample(alphabet, random.randint(0,max_plugboard_pairs)*2))
 
     result = run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, result)
 
@@ -74,12 +73,13 @@ def preprocess(example):
     
     processed_text = regex.sub('', text).upper()[:512]
     processed_text, label = encode_text(processed_text)
+    # processed_text = " ".join(list(processed_text))
     return {"text": [processed_text], "label": [label]}
 
 
 dataset = load_dataset("bookcorpus")
 dataset = dataset.map(preprocess, batched=True)
 
-# dataset = dataset['train'].train_test_split(test_size=0.2)
+dataset = dataset['train'].train_test_split(test_size=0.2)
 
-dataset.save_to_disk('dataset/enigma_binary_classification_en_0-13_plugs')
+dataset.save_to_disk('dataset/enigma_binary_classification_en_2_plugs')
