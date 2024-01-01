@@ -3,7 +3,7 @@
 ## Overview
 This is a project for decrypting Enigma Machine messages using AI. This system achieves a decryption time of below 18 minutes on a single CPU. 
 
-System is made up of two components, a enigma machine simulation and a classfication model. The system iterates through the 1,054,560 possible rotor configurations. At each rotor configuration it decrypts the message and passes the decrypted text to the classification model to get a prediction as to whether it is the correct rotor configuration. After completing all configurations, it takes the highest prediction. 
+System is made up of two components, an enigma machine simulation and an AI model. The system iterates through the 1,054,560 possible rotor configurations. At each rotor configuration it decrypts the message and the model gives it a prediction. After completing all configurations, it takes the highest prediction and the settings that were used to get that prediction. 
 
 ## Enigma Machine simulation
 The Enigma Machine simulation is the written in c. It is based on the Enigma I model. See the [Enigmac](https://github.com/LewisLee26/Enigmac) repository for more information.
