@@ -6,7 +6,7 @@ This is a project for decrypting Enigma Machine messages using AI. This system a
 System is made up of two components, an enigma machine simulation and an AI model. The system iterates through the 1,054,560 possible rotor configurations. At each rotor configuration it decrypts the message and the model gives it a prediction. After completing all configurations, it takes the highest prediction and the settings that were used to get that prediction. 
 
 ## Enigma Machine simulation
-The Enigma Machine simulation is the written in c. It is based on the Enigma I model. See the [Enigmac](https://github.com/LewisLee26/Enigmac) repository for more information.
+The Enigma Machine simulation is the written in C. It is based on the Enigma I model. See the [Enigmac](https://github.com/LewisLee26/Enigmac) repository for more information.
 
 ## Model
 The AI model is a trained like a binary classification model but within the system it acts like a regression model for predicting the most like text to be the decrypted text. 
@@ -41,3 +41,8 @@ Larger models have been tested but with only minor improvement. A finetuned Dist
 | Base | 826.2 |
 | Onnxruntime | 1062.7 |
 
+## To Do
+- Fix Enigmac bug
+- Convert model int64 to int32
+- Quantize and prune linear and mlp layers in the model
+- Rewrite the main file in C++
