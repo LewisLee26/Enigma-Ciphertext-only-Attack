@@ -261,9 +261,9 @@ char enigmaEachEncrypt(
     return ch;
 }
 
-const char* run_enigma(int reflector, int wheel_order[], char ring_setting[], char wheel_pos[], char plugboard_pairs[], const unsigned int plaintextsize, char from[] ) {
+char* run_enigma(int reflector, int wheel_order[], char ring_setting[], char wheel_pos[], char plugboard_pairs[], const unsigned int plaintextsize, char from[]) {
     EnigmaParam param;
-    char to[plaintextsize + 1];
+    char *to = (char*)malloc((plaintextsize + 1) * sizeof(char)); 
     setparam_ENIGMA_I(&param, reflector, wheel_order, ring_setting, wheel_pos, (char*)plugboard_pairs);
 
     CurSetting cursetting;
@@ -277,5 +277,21 @@ const char* run_enigma(int reflector, int wheel_order[], char ring_setting[], ch
         to[i] = enigmaEachEncrypt(&param, &cursetting, inversewheel, from[i]);
 
     to[len] = '\0';
-    return strdup(to);
+    
+    return to;
 }
+
+
+// void main(){
+//     int reflector = 0;
+//     int wheel_order[] = {0, 1, 2};
+//     char ring_setting[] = "AAA";
+//     char wheel_pos[] = "AAA";
+//     char plugboard_pairs[] = "";
+//     const unsigned int plaintextsize = 10;
+//     char from[] = "HELLOWORLD";
+
+//     for (int i = 0; i < 1000000; i++){
+//         printf(run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, from));
+//     }
+// }

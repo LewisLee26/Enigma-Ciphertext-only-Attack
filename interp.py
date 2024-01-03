@@ -1,3 +1,4 @@
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -5,6 +6,10 @@ from torch.nn import BCEWithLogitsLoss
 from torch.utils.data import Dataset, DataLoader
 from datasets import load_from_disk
 from tqdm import tqdm
+
+# from captum.attr import visualization as viz
+# from captum.attr import LayerConductance, LayerIntegratedGradients
+import torchlens as tl
 
 CHARSET_SIZE = 26
 
@@ -14,18 +19,18 @@ class TransformerModel(nn.Module):
         super(TransformerModel, self).__init__()
         
         self.adim = adim
-        encoder_layers = nn.TransformerEncoderLayer(adim, nhead, nhid, dropout, batch_first = True)
+        encoder_layers = nn.TransformerEncoderLayer(adim, nhead, nhid, dropout)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, nlayers)
 
         self.classifier = nn.Linear(nhid*adim, 1)
 
     def forward(self, src):
-        src = F.one_hot(src.to(torch.int64), CHARSET_SIZE).float()
+        src = F.one_hot(src, CHARSET_SIZE).float()
         src = self.resize_embedding(src)
         src = self.transformer_encoder(src)
         src = torch.flatten(src, -2)
         src = self.classifier(src)
-        return src
+        return F.sigmoid(src).squeeze(-1)
 
     def resize_embedding(self, input_tensor):
         input_size = list(input_tensor.shape)
@@ -51,40 +56,11 @@ class CustomDataset(Dataset):
 
         return token, label
 
-def test(model, dataloader, criterion):
-    model.eval()
-    total_loss = 0.0
-    correct_predictions = 0
-    total_samples = 0
-
-    with torch.no_grad():
-        for inputs, labels in tqdm(dataloader):
-            outputs = model(inputs)
-            outputs = F.sigmoid(outputs).squeeze(-1)
-            loss = criterion(outputs, labels.float())
-            total_loss += loss.item()
-
-            # Assuming binary classification
-            predicted_labels = torch.sigmoid(outputs).round()
-            correct_predictions += (predicted_labels == labels).sum().item()
-            total_samples += labels.size(0)
-
-
-    average_loss = total_loss / len(dataloader)
-    accuracy = correct_predictions / total_samples
-
-    return average_loss, accuracy
-
 test_dataset = load_from_disk(r"dataset\enigma_binary_classification_en_0-13_plugs\test")
 test_tokens = [torch.tensor([ord(char) - 65 for char in (list(text))]).to(torch.int64) for text in tqdm(test_dataset['text'], desc="Loading Testing Dataset")]   
 test_labels = torch.tensor(test_dataset['label'])
 test_dataset = CustomDataset(test_tokens, test_labels)
 
-test_dataloader = DataLoader(
-    test_dataset,
-    batch_size=1,
-    shuffle=False
-)
 
 nhead = 1
 nhid = 512
@@ -96,7 +72,15 @@ adim = CHARSET_SIZE + CHARSET_SIZE % nhead
 model = TransformerModel(nhead, adim, nhid, nlayers, dropout)
 criterion = BCEWithLogitsLoss()
 
-model.load_state_dict(torch.load(r"model/model_1.pt"))
+model.load_state_dict(torch.load(r"model/model_4.pt"))
 model.eval()
 
-print(test(model, test_dataloader, criterion))
+# print(test(model, test_dataloader, criterion))
+
+test_input = test_dataset.__getitem__(1)[0]
+# print(test_input)
+
+model_history = tl.log_forward_pass(model, test_input, layers_to_save='all', vis_opt='none')
+print(model_history)
+print(model_history['scaleddotproductattention_1_12'])
+

@@ -1,37 +1,16 @@
 import re
-import ctypes
-import ctypes.util
 from tqdm.auto import tqdm
-import concurrent.futures
 import numpy as np
 import onnx
 import onnxruntime
 from itertools import permutations
+from ctypes import *
+from tqdm import tqdm
 
-enigma_lib = ctypes.CDLL(r'C:\Users\lewis\Documents\GitHub\Enigma-Ciphertext-only-Attack\enigmac\enigma.dll')  # Replace with the actual path to your shared library
-
-# Define the argument and return types for the run_enigma function
-enigma_lib.run_enigma.argtypes = [
-    ctypes.c_int,                 # reflector
-    ctypes.POINTER(ctypes.c_int), # wheel_order
-    ctypes.c_char_p,              # ring_setting
-    ctypes.c_char_p,              # wheel_pos
-    ctypes.c_char_p,              # plugboard_pairs
-    ctypes.c_uint,                # plaintextsize
-    ctypes.c_char_p               # from
-]
-enigma_lib.run_enigma.restype = ctypes.c_char_p
-
-def run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, from_str):
-    return enigma_lib.run_enigma(
-        reflector,
-        (ctypes.c_int * len(wheel_order))(*wheel_order),
-        ctypes.create_string_buffer(ring_setting.encode()),
-        ctypes.create_string_buffer(wheel_pos.encode()),
-        ctypes.create_string_buffer(plugboard_pairs.encode()),
-        plaintextsize,
-        ctypes.create_string_buffer(from_str.encode())
-    ).decode()
+# Load the enigmac library
+libenigma = CDLL(r'./enigmac/enigma.dll')
+libenigma.run_enigma.argtypes = [c_int, POINTER(c_int), POINTER(c_char), POINTER(c_char), POINTER(c_char), c_uint, POINTER(c_char)]
+libenigma.run_enigma.restype = POINTER(c_char)
 
 
 # removing non-alphabet characters
@@ -42,24 +21,26 @@ def preprocess(text):
     return regex.sub('', text).upper()[:512]
 
 def tokenize(text):
-    return np.array([ord(char) - ord("A") for char in list(text)], dtype=np.int64)
+    tokens = np.array([ord(char) - ord("A") for char in list(text)], dtype=np.int64)
+    if tokens.size < 512:
+        zeros = np.zeros(512 - tokens.size, dtype=np.int64)
+        return np.concatenate((tokens, zeros), dtype=np.int64)
+    return tokens
 
+# preset run_enigma arguments
 reflector = 1
-wheel_order = [0, 1, 2]
-ring_setting = "ABC"
-ring_setting = "AAA"
-wheel_pos = "AOR"
-wheel_pos = "ANP"
-plugboard_pairs = "ARBYCOHXINMZ"
-plugboard_pairs = ""
-plaintext = "INEVERREALLYEXPECTEDTOFINDMYSELFGIVINGADVICETOPEOPLEGRADUATINGFROMANESTABLISHMENTOFHIGHEREDUCATIONINEVERGRADUATEDFROMANYSUCHESTABLISHMENTINEVEREVENSTARTEDATONEIESCAPEDFROMSCHOOLASSOONASICOULDWHENTHEPROSPECTOFFOURMOREYEARSOFENFORCEDLEARNINGBEFOREIDBECOMETHEWRITERIWANTEDTOBEWASSTIFLINGIGOTOUTINTOTHEWORLDIWROTEANDIBECAMEABETTERWRITERTHEMOREIWROTEANDIWROTESOMEMOREANDNOBODYEVERSEEMEDTOMINDTHATIWASMAKINGITUPASIWENTALONGTHEYJUSTREADWHATIWROTEANDTHEYPAIDFORITORTHEYDIDNTANDOFTENTHEYCOMMISSIONEDMETOWRITESOMETHINGELSEFORTHEMWHICHHASLEFTMEWITHAHEALTHYRESPECTANDFONDNESSFORHIGHEREDUCATIONTHATTHOSEOFMYFRIENDSANDFAMILYWHOATTENDEDUNIVERSITIESWERECUREDOFLONGAGOLOOKINGBACKIVEHADAREMARKABLERIDEIMNOTSUREICANCALLITACAREERBECAUSEACAREERIMPLIESTHATIHADSOMEKINDOFCAREERPLANANDINEVERDIDTHENEARESTTHINGIHADWASALISTIMADEWHENIWAS15OFEVERYTHINGIWANTEDTODOTOWRITEANADULTNOVELACHILDRENSBOOKACOMICAMOVIERECORDANAUDIOBOOKWRITEANEPISODEOFDOCTORWHOANDSOONIDIDNTHAVEACAREERIJUSTDIDTHENEXTTHINGONTHELISTSOITHOUGHTIDTELLYOUEVERYTHINGIWISHIDKNOWNSTARTINGOUTANDAFEWTHINGSTHATLOOKINGBACKONITISUPPOSETHATIDIDKNOWANDTHATIWOULDALSOGIVEYOUTHEBESTPIECEOFADVICEIDEVERGOTWHICHICOMPLETELYFAILEDTOFOLLOWFIRSTOFALLWHENYOUSTARTOUTONACAREERINTHEARTSYOUHAVENOIDEAWHATYOUAREDOINGTHISISGREATPEOPLEWHOKNOWWHATTHEYAREDOINGKNOWTHERULESANDKNOWWHATISPOSSIBLEANDIMPOSSIBLEYOUDONOTANDYOUSHOULDNOTTHERULESONWHATISPOSSIBLEANDIMPOSSIBLEINTHEARTSWEREMADEBYPEOPLEWHOHADNOTTESTEDTHEBOUNDSOFTHEPOSSIBLEBYGOINGBEYONDTHEMANDYOUCANIFYOUDONTKNOWITSIMPOSSIBLEITSEASIERTODOANDBECAUSENOBODYSDONEITBEFORETHEYHAVENTMADEUPRULESTOSTOPANYONEDOINGTHATAGAINYETSECONDLYIFYOUHAVEANIDEAOFWHATYOUWANTTOMAKEWHATYOUWEREPUTHERETODOTHENJUSTGOANDDOTHAT"
-from_str = "CKFRKWZSEHCKSRFJIBWXRMMFHJCWJLFHFYNBWXULALKDVNLURSPWXNTBAWZKCQWVXCNCXXQVQDQLCAKYGSPIUQOUQXARYMHEIAVWBTZUZDYXZGHPGMHRUUWCELNZRJENVSDTFKMYXKOVZBQDEUZTFVZPLKTRJGLKBORCXYSLYMRAORDTIYDZSWAXTOSBJPINJPRZQNWECWNQOMKNGPCNRHWQAMGJXTLJHJNUJYYKTUSPRPTRALIZICFZJMKBFFQZPZGEBMUSIEJQVKGCTNFLZSEMHOSLDBYZJRYDRGQNJUPIAHJWZIXDADJMWQAGVJLGZGFCLMECEXBLRXTBCZIZVPCRPKUVGCXRJUFVBMEDIILDZAAYBFIREMHBHBZOWCRKQLYEKKGGVBQGRIATLOWOENQBBZRVIVTUTNNWRDTGFZCIABXVAZZPNLCTJKCJAEXVWHZWOEKCBQMKMSAWPIRCHXVJCMNFJFBAJKTNKLCMWBBYPDKTAVMCTBOXCHXSBQQYZIVQVCLQZQRFNXXUPOLQNMMBDGLRNHGVAOAPBUWBJMOZYXFGJURDETDCOAYDQQMNJLJZMXFVBJVKWVUJXTTBACBRIUJYBLCOZMOIRGRJLIZMPWKRJXUTTGVHRDZAKLSSIOIEHIYWLSQHCGHGRRUPICGHOJQSWGXYFFIBFKLLLRVJSTTZQWLJSWXLNRESBKXJKLZOBPRLQFZBPLZUPNPAUJFMVYVSCRCJRJHNKXUYPVQMWMWHNVGHPIZANQWUPAALEMHAYANFDUGMJDUVHRCDYPNBPOTKUOZYXHUXSLFMMRDLTLIXZGMVJPRYSYPTMNOZQUXNEOHZNNTGQEHALJHTWEHBQVKOOJTCGMSUXEHBOMXBXWUGLIALJPDBVMSJUZTUPYLOBOYUXXDGAUHYSNZAVSXJIEQVMFBNQZYXRASWFANPXKWSABNGEQPNHBFFNEXEONWAPVTMKQRABCIHJMPYCCMBVQNHMCHGNDKRCJWQIYJMBQGZCHCWVJPVWVMZENBRQXOKCAFPBGAKAEJZJJWDAZIJMVEOWLWMMSSDAMTKALHBFNEEVKXHDTVTKOHLRHVCFNEOXZKCLBLROFPHUNOYCRIWTPWJEKGCFVAWRQWFAYBXFPEWRGJMVSVFWPPUQYWWYLXLIZFXRKRTLGZPQTXDGQRTMKMDITHNCPIIDKTBJKCURTHAUITPIVDRXIWLIXXCDQHXREZZSCAGKIEUMJYEBGFFXXIDJAUNJPONFPLZCBONNJOUQEJIIPUSCBELPFJYVYJSVJXCYYLVLXUURRMPRBQHTRLRXOLSBMKDFSSGDWBFGKZUEJQRTBFVTOWPQMACUVVYAWZCMYQPOJGPEUAJYYGJRDPRGDYPVWGLQJVRLKOPBRAZOEXKGFNVYDDXYBVKWPELSPVPASQRQJECBUKHCTFXVNPTGUPGGOLLUZBPPPHLOCCPDGZUSDYRUCDUVRRELISSAQVVEHBYWVKILBRVNYSTKHTSRMPEEEJOBCIZVLTUQIKSODWZFDCFJODQPECXZTWWKJPSQDTCZPEWGIWCQWEFHGJPXIAAYTNTTVKOGFFCARLPNEAXNHGCTPNIVKYHIYMERGTGWOJCZFXYBYFCHMIOWLREWRPUYHRBQRDKXWVVRUUICXOACFKOZWTYWUULBKMQ"
-from_str = preprocess(from_str)
-plaintextsize = len(from_str)
+wheel_order = (c_int * 3)(0, 1, 2)
+ring_setting = create_string_buffer(b"AAA")
+wheel_pos = create_string_buffer(b"ANP")
+# plugboard_pairs = create_string_buffer(b"ARBYCOHXINMZ")
+plugboard_pairs = create_string_buffer(b"")
+# from_str = "CKFRKWZSEHCKSRFJIBWXRMMFHJCWJLFHFYNBWXULALKDVNLURSPWXNTBAWZKCQWVXCNCXXQVQDQLCAKYGSPIUQOUQXARYMHEIAVWBTZUZDYXZGHPGMHRUUWCELNZRJENVSDTFKMYXKOVZBQDEUZTFVZPLKTRJGLKBORCXYSLYMRAORDTIYDZSWAXTOSBJPINJPRZQNWECWNQOMKNGPCNRHWQAMGJXTLJHJNUJYYKTUSPRPTRALIZICFZJMKBFFQZPZGEBMUSIEJQVKGCTNFLZSEMHOSLDBYZJRYDRGQNJUPIAHJWZIXDADJMWQAGVJLGZGFCLMECEXBLRXTBCZIZVPCRPKUVGCXRJUFVBMEDIILDZAAYBFIREMHBHBZOWCRKQLYEKKGGVBQGRIATLOWOENQBBZRVIVTUTNNWRDTGFZCIABXVAZZPNLCTJKCJAEXVWHZWOEKCBQMKMSAWPIRCHXVJCMNFJFBAJKTNKLCMWBBYPDKTAVMCTBOXCHXSBQQYZIVQVCLQZQRFNXXUPOLQNMMBDGLRNHGVAOAPBUWBJMOZYXFGJURDETDCOAYDQQMNJLJZMXFVBJVKWVUJXTTBACBRIUJYBLCOZMOIRGRJLIZMPWKRJXUTTGVHRDZAKLSSIOIEHIYWLSQHCGHGRRUPICGHOJQSWGXYFFIBFKLLLRVJSTTZQWLJSWXLNRESBKXJKLZOBPRLQFZBPLZUPNPAUJFMVYVSCRCJRJHNKXUYPVQMWMWHNVGHPIZANQWUPAALEMHAYANFDUGMJDUVHRCDYPNBPOTKUOZYXHUXSLFMMRDLTLIXZGMVJPRYSYPTMNOZQUXNEOHZNNTGQEHALJHTWEHBQVKOOJTCGMSUXEHBOMXBXWUGLIALJPDBVMSJUZTUPYLOBOYUXXDGAUHYSNZAVSXJIEQVMFBNQZYXRASWFANPXKWSABNGEQPNHBFFNEXEONWAPVTMKQRABCIHJMPYCCMBVQNHMCHGNDKRCJWQIYJMBQGZCHCWVJPVWVMZENBRQXOKCAFPBGAKAEJZJJWDAZIJMVEOWLWMMSSDAMTKALHBFNEEVKXHDTVTKOHLRHVCFNEOXZKCLBLROFPHUNOYCRIWTPWJEKGCFVAWRQWFAYBXFPEWRGJMVSVFWPPUQYWWYLXLIZFXRKRTLGZPQTXDGQRTMKMDITHNCPIIDKTBJKCURTHAUITPIVDRXIWLIXXCDQHXREZZSCAGKIEUMJYEBGFFXXIDJAUNJPONFPLZCBONNJOUQEJIIPUSCBELPFJYVYJSVJXCYYLVLXUURRMPRBQHTRLRXOLSBMKDFSSGDWBFGKZUEJQRTBFVTOWPQMACUVVYAWZCMYQPOJGPEUAJYYGJRDPRGDYPVWGLQJVRLKOPBRAZOEXKGFNVYDDXYBVKWPELSPVPASQRQJECBUKHCTFXVNPTGUPGGOLLUZBPPPHLOCCPDGZUSDYRUCDUVRRELISSAQVVEHBYWVKILBRVNYSTKHTSRMPEEEJOBCIZVLTUQIKSODWZFDCFJODQPECXZTWWKJPSQDTCZPEWGIWCQWEFHGJPXIAAYTNTTVKOGFFCARLPNEAXNHGCTPNIVKYHIYMERGTGWOJCZFXYBYFCHMIOWLREWRPUYHRBQRDKXWVVRUUICXOACFKOZWTYWUULBKMQ"
+from_str = "NUWHAQRFMCBBSMYJKMEXGEXIYHXIKUSZBTUQADSRKGABHCMUMIESEPCGPWEAIJKHBZWRVLYVAQELXZJTWLQKIVORJGDAROMJTUQNXDGGVGUBPDWYFIUJQXVSBHXRLAMSAIJXCAONVDHKDYNZKYTRMIFLDNTXBEEJGAMSNYJUVFHWAUZSVNKSBXHFGGBUPOYBODZCLPQXWGIUMMOAGQCTISTDAYESSMQWUMUGYIUMYHBXBUJYQIDCHHTCMAZFZYGHJWLTCFUEJLFBRYKLGYZVLVEARZEESTUBKACDAXJIVULBZXACHGPXRCNAXIRTAFTBRBQFJOAXTLYBSRTJCZFUIXDKISLJNQVCWZCRGQOZJNZWVNLKBYBQFWHJALWDMKHQILXIEJQJUGSPWXEAPVJBKRBNTBPIORXFWLIVKKDCFXZAGDISWQQCVKZENNRMXTSHTPGKXOMXFGJQMFNRNDVQYMBFDSGJVPFRFLRGDHJNXEUPBKUPEOUXRDGRMTIWKWJS"
+plaintextsize = len(preprocess(from_str))+1
+from_str = create_string_buffer(preprocess(from_str).encode())
 
 
-
-path = r"model/model_0.onnx"
+path = r"model/model_4.onnx"
 
 onnx_model = onnx.load(path)
 
@@ -69,60 +50,49 @@ def to_numpy(tensor):
     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
 
-wheels = [0, 1, 2, 3, 5]
+wheels = [0, 1, 2]
 combinations_list = list(permutations(wheels, 3))
-
-
-def run_enigma_test_thread(params):
-    i, j, k, reflector, wheel_order, ring_setting, plugboard_pairs, plaintextsize, from_str = params
-    wheel_pos = chr(65 + i) + chr(65 + j) + chr(65 + k)
-    result = run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, from_str)
-    
-    inputs = {ort_session.get_inputs()[0].name: tokenize(result)}
-    output = ort_session.run(None, inputs)
-    
-    return output[0], [i, j, k]
+# combinations_list = [[0, 1, 2]]
 
 def run_enigma_test():
-    max_index = 17576*60
+    max_index = 17576*len(combinations_list)
     highest_val = 0
     highest_val_settings = []
 
-    # params_list = [(i, j, k, reflector, wheel_order, ring_setting, plugboard_pairs, plaintextsize, from_str)
-    #                for i in range(26) for j in range(26) for k in range(26) for wheel_order in combinations_list]
     pbar = tqdm(total = max_index)
     for wheel_order in combinations_list:
-        
-        # with concurrent.futures.ThreadPoolExecutor() as executor:
-        #     results = list(tqdm(executor.map(run_enigma_test_thread, params_list), total=max_index))
+        wheel_order = (c_int * 3)(wheel_order[0], wheel_order[1], wheel_order[2])
         for i in range(26):
             for j in range(26):
                 for k in range(26):
-                    wheel_pos = chr(65 + i) + chr(65 + j) + chr(65 + k)
-                    try:
-                        result = run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, from_str)
-                    except Exception as e:
-                        input(e)
+                    wheel_order = (c_int * 3)(wheel_order[0], wheel_order[1], wheel_order[2])
+                    ring_setting = create_string_buffer((chr(65) + chr(65 + j) + chr(65 + k)).encode())
+                    wheel_pos = create_string_buffer((chr(65 + i) + chr(65 + j) + chr(65 + k)).encode())
 
-                    inputs = {ort_session.get_inputs()[0].name: tokenize(result)}
+                    result = libenigma.run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, from_str)
+                    result_bytes = string_at(result, (plaintextsize-1))
+                    
+                    inputs = {ort_session.get_inputs()[0].name: tokenize(result_bytes.decode())}
                     output = ort_session.run(None, inputs)
-    
-                    if output[0] < highest_val:
+
+                    if output[0] > highest_val:
                         highest_val = output[0]
-                        highest_val_settings = [i, j, k]
-                    # there is an error in enigmac
-                    # UnicodeDecodeError: 'utf-8' codec can't decode byte 0xe6 in position 11: invalid continuation byte
+                        highest_val_wheel_pos = wheel_pos
+                        highest_val_wheel_order = wheel_order
                     pbar.update(1)
 
         
-    return highest_val, highest_val_settings
+    return highest_val, highest_val_wheel_pos, highest_val_wheel_order
 
-highest_val, highest_val_settings = run_enigma_test()
+highest_val, highest_val_wheel_pos, highest_val_wheel_order = run_enigma_test()
 
-print(highest_val_settings)
+print(highest_val)
 
-wheel_pos = chr(65 + int(highest_val_settings[0])) + chr(65 + highest_val_settings[1]) + chr(65 + highest_val_settings[2])
-result = run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, from_str)
+result = libenigma.run_enigma(reflector, highest_val_wheel_order, ring_setting,highest_val_wheel_pos, plugboard_pairs, plaintextsize, from_str)
+result_bytes = string_at(result, (plaintextsize-1))
+print(result_bytes.decode())
 
-print(result)
-
+wheel_pos = create_string_buffer(b"ANP")
+result = libenigma.run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, from_str)
+result_bytes = string_at(result, (plaintextsize-1))
+print(result_bytes.decode())

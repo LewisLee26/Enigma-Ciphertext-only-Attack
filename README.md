@@ -1,7 +1,7 @@
 # Enigma Ciphertext-only Attack
 
 ## Overview
-This is a project for decrypting Enigma Machine messages using AI. This system achieves a decryption time of below 18 minutes on a single CPU. 
+This is a project for decrypting Enigma Machine messages using AI. This system achieves a decryption time of below 15 minutes on a single CPU. 
 
 System is made up of two components, an enigma machine simulation and an AI model. The system iterates through the 1,054,560 possible rotor configurations. At each rotor configuration it decrypts the message and the model gives it a prediction. After completing all configurations, it takes the highest prediction and the settings that were used to get that prediction. 
 
@@ -26,23 +26,17 @@ Larger models have been tested but with only minor improvement. A finetuned Dist
 
 | Number of plugboard pairs | Accuracy | 
 |---------------------------|------------|
-| 0 | 91.2 |
-| 2 | 91.5 |
-| 4 | 90.9 |
-| 6 | 90.3 |
-| 8 | 87.9 |
-| 10 | 85.0 |
-| 12 | 84.8 |
-| 13 | 79.7 |
-| 0-13 | 79.9 |
+| 0 | 95.3 |
+| 2 | 95.3 |
+| 4 | 95.0 |
+| 6 | 94.2 |
+| 8 | 91.4 |
+| 10 | 87.8 |
+| 12 | 83.5 |
+| 13 | 81.2 |
+| 0-13 | 81.5 |
 
 | Model | Inference Speed (it/s) | 
 |-------|-----------------|
 | Base | 826.2 |
 | Onnxruntime | 1062.7 |
-
-## To Do
-- Fix Enigmac bug
-- Convert model int64 to int32
-- Quantize and prune linear and mlp layers in the model
-- Rewrite the main file in C++

@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-#define MAX_LENGTH 2
+#define MAX_LENGTH 26
 #define MAXTURNOVERNUM (5)
 
 typedef struct wheel__ {
@@ -114,6 +114,6 @@ char enigmaEachEncrypt(
     char ch
 );
 
-const char* run_enigma(int reflector, int wheel_order[], char ring_setting[], char wheel_pos[], char plugboard_pairs[], const unsigned int plaintextsize, char from[] );
+char* run_enigma(int reflector, int wheel_order[], char ring_setting[], char wheel_pos[], char plugboard_pairs[], const unsigned int plaintextsize, char from[] );
 
 #endif

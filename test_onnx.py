@@ -4,12 +4,12 @@ import torch
 from tqdm import tqdm
 import numpy as np
 
-path = r"model/model_0.onnx"
+path = r"model/model_3.onnx"
 
 onnx_model = onnx.load(path)
 onnx.checker.check_model(onnx_model)
 
-ort_session = onnxruntime.InferenceSession(path, providers=["CPUExecutionProvider"])
+ort_session = onnxruntime.InferenceSession(path, providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
 
 def to_numpy(tensor):
     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
@@ -71,7 +71,7 @@ def test(model, dataloader, criterion):
 
     return average_loss, accuracy
 
-test_dataset = load_from_disk(r"dataset\enigma_binary_classification_en_0_plugs\test")
+test_dataset = load_from_disk(r"dataset\enigma_binary_classification_en_13_plugs\test")
 test_tokens = [torch.tensor([ord(char) - 65 for char in (list(text))]).to(torch.int64) for text in tqdm(test_dataset['text'], desc="Loading Testing Dataset")]   
 test_labels = torch.tensor(test_dataset['label'])
 test_dataset = CustomDataset(test_tokens, test_labels)

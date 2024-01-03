@@ -1,4 +1,4 @@
 model
 wandb
 .env
-dataset/
+dataset

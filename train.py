@@ -14,25 +14,30 @@ import wandb
 CHARSET_SIZE = 26  # A-Z (2  empty embeddings)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+torch.set_printoptions(precision=20)
 
+
+# Model for classifiying text
 class TransformerModel(nn.Module):
 
     def __init__(self, nhead, adim, nhid, nlayers, dropout=0.5):
         super(TransformerModel, self).__init__()
         
         self.adim = adim
-        encoder_layers = nn.TransformerEncoderLayer(adim, nhead, nhid, dropout)
+        encoder_layers = nn.TransformerEncoderLayer(adim, nhead, nhid, dropout, batch_first = True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, nlayers)
 
         self.classifier = nn.Linear(nhid*adim, 1)
 
     def forward(self, src):
-        src = F.one_hot(src, CHARSET_SIZE).float()
+        src = F.one_hot(src.to(torch.int64), CHARSET_SIZE).float()
         src = self.resize_embedding(src)
         src = self.transformer_encoder(src)
         src = torch.flatten(src, -2)
+        
+        # don't use a sigmoid function on the output inside the mode
         src = self.classifier(src)
-        return F.sigmoid(src).squeeze(-1)
+        return src
 
     def resize_embedding(self, input_tensor):
         input_size = list(input_tensor.shape)
@@ -43,7 +48,6 @@ class TransformerModel(nn.Module):
         return output_tensor
 
 
-# Training function
 def train(model, criterion, optimizer, epochs, dataloader):
     pbar = tqdm(total=epochs*len(dataloader), desc="Traning - Epoch: 1 - Loss: None")
     for epoch in range(epochs):
@@ -51,6 +55,9 @@ def train(model, criterion, optimizer, epochs, dataloader):
         for i, (inputs, labels) in enumerate(dataloader):
             model.train()
             outputs = model(inputs)
+            # the sigmoid is used outisde the model during training and testing
+            # this is so it can be used as a regression model in deployment
+            outputs = F.sigmoid(outputs.to(dtype=torch.float64)).squeeze(-1)
             loss = criterion(outputs, labels.float())
             optimizer.zero_grad()
             loss.backward()
@@ -81,6 +88,7 @@ def test(model, dataloader, criterion):
     with torch.no_grad():
         for inputs, labels in dataloader:
             outputs = model(inputs)
+            outputs = F.sigmoid(outputs).squeeze(-1)
             loss = criterion(outputs, labels.float())
             total_loss += loss.item()
 
@@ -112,14 +120,14 @@ class CustomDataset(Dataset):
 
 
 test_dataset = load_from_disk(r"dataset\enigma_binary_classification_en_0-13_plugs\test")
-test_tokens = [torch.tensor([ord(char) - 65 for char in (list(text))]).to(torch.int64) for text in tqdm(test_dataset['text'], desc="Loading Testing Dataset")]   
+test_tokens = [torch.tensor([ord(char) - 65 for char in (list(text))]) for text in tqdm(test_dataset['text'], desc="Loading Testing Dataset")]   
 test_labels = torch.tensor(test_dataset['label'])
 test_dataset = CustomDataset(test_tokens, test_labels)
 test_dataset_trimmed = CustomDataset(test_tokens[:500], test_labels[:500])
 
 
 train_dataset = load_from_disk(r"dataset\enigma_binary_classification_en_0-13_plugs\train")
-train_tokens = [torch.tensor([ord(char) - 65 for char in (list(text))]).to(torch.int64) for text in tqdm(train_dataset['text'], desc="Loading Training Dataset")]   
+train_tokens = [torch.tensor([ord(char) - 65 for char in (list(text))]) for text in tqdm(train_dataset['text'], desc="Loading Training Dataset")]   
 train_labels = torch.tensor(train_dataset['label'])
 train_dataset = CustomDataset(train_tokens, train_labels)
 
@@ -161,6 +169,8 @@ criterion = BCEWithLogitsLoss()
 optimizer = Adam(model.parameters(), lr=lr)
 
 
+
+
 wandb.init(
     project="Enigma Ciphertext-only Attack",
     config={
@@ -178,12 +188,14 @@ train(model, criterion, optimizer, epochs=epochs, dataloader=train_dataloader)
 
 test(model, test_dataloader, criterion)
 
-torch.save(model.state_dict(), r"model/model_0.pt")
+
+torch.save(model.state_dict(), r"model/model_4.pt")
 
 
-dummy_input = torch.randn(512).to(torch.int64)
+dummy_input = torch.rand(512).to(torch.int64)
+
 torch.onnx.export(model,               # model being run
                   dummy_input,                         # model input (or a tuple for multiple inputs)
-                  r"model/model_0.onnx",   # where to save the model (can be a file or file-like object)
+                  r"model/model_4.onnx",   # where to save the model (can be a file or file-like object)
                   verbose=True
                   )

@@ -34,7 +34,7 @@ def run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs,
 alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 wheels = [0, 1, 2, 3, 4]
 reflectors = [0, 1, 2]
-max_plugboard_pairs = 2
+max_plugboard_pairs = 12
 def encode_text(text):
     wheel_order = random.sample(wheels, 3)
     reflector = random.choice(reflectors)
@@ -82,4 +82,4 @@ dataset = dataset.map(preprocess, batched=True)
 
 dataset = dataset['train'].train_test_split(test_size=0.2)
 
-dataset.save_to_disk('dataset/enigma_binary_classification_en_2_plugs')
+dataset.save_to_disk('dataset/enigma_binary_classification_en_12_plugs')
