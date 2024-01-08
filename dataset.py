@@ -1,6 +1,8 @@
 from datasets import load_dataset, DatasetDict
 import re
 import random
+import pandas as pd
+from tqdm import tqdm
 
 import ctypes
 import ctypes.util
@@ -61,25 +63,34 @@ def encode_text(text):
 
 regex = re.compile('[^a-zA-Z]')
 
-# removing non-alphabet characters
-# converting to uppercase
-# trimming to 512 characters
-def preprocess(example):
-    text = example["text"]
-    
-    # Check if text is not a string and convert it to a string
-    if not isinstance(text, str):
-        text = str(text)
-    
-    processed_text = regex.sub('', text).upper()[:512]
+
+# dataset = load_dataset("bookcorpus")
+dataset = load_dataset("wikipedia", "20220301.en")
+
+
+print(dataset['train'])
+dataset['train'] = dataset['train'][:1000]
+
+df = pd.DataFrame({'text': [], 'label':[]})
+
+max_text_len = 512
+texts = dataset['train']['text']
+for text in tqdm(texts):
+    for i in range(len(text)//max_text_len): 
+        processed_text = regex.sub('', text[i*max_text_len:i*max_text_len+max_text_len]).upper()
+        processed_text, label = encode_text(processed_text)
+        df.loc[-1] = [processed_text, label]  # adding a row
+        df.index = df.index + 1  # shifting index
+        # df = df.sort_index()  # sorting by index
+
+    processed_text = regex.sub('', text[i*max_text_len:i*max_text_len+len(text)%max_text_len]).upper()
     processed_text, label = encode_text(processed_text)
-    # processed_text = " ".join(list(processed_text))
-    return {"text": [processed_text], "label": [label]}
+    df.loc[-1] = [processed_text, label]  # adding a row
+    df.index = df.index + 1  # shifting index
+    # df = df.sort_index()  # sorting by index
+df = df.sort_index()  # sorting by index
+
+print(df)
 
 
-dataset = load_dataset("bookcorpus")
-dataset = dataset.map(preprocess, batched=True)
-
-dataset = dataset['train'].train_test_split(test_size=0.2)
-
-dataset.save_to_disk('dataset/enigma_binary_classification_en_12_plugs')
+df.to_parquet(r"dataset/enigma_binary_classification_wiki_en_12_plugs.parquet")

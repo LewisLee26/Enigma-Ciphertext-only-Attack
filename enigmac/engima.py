@@ -16,9 +16,6 @@ enigma_lib.run_enigma.argtypes = [
     ctypes.c_char_p               # from
 ]
 enigma_lib.run_enigma.restype = ctypes.c_char_p
-# enigma_lib.free_memory.argtypes = [ctypes.c_char_p]
-# enigma_lib.free_memory.restype = None
-
 
 def run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, from_str):
     return enigma_lib.run_enigma(
@@ -48,10 +45,8 @@ from_str = "CKFRKWZSEHCKSRFJIBWXRMMFHJCWJLFHFYNBWXULALKDVNLURSPWXNTBAWZKCQWVXCNC
 
 result_pointer = run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, from_str)
 result_bytes = ctypes.string_at(result_pointer, plaintextsize)
-print(type(result_pointer))
 print(result_bytes.decode('utf-8'))
 
-input()
 
 wheels = [0, 1, 2, 3, 4]
 combinations_list = list(permutations(wheels, 3))
@@ -68,12 +63,8 @@ def run_enigma_test():
                 for k in range(26):
                     # total_index = 676*i+26*j+k
                     wheel_pos = chr(65+i) + chr(65+j) + chr(65+k)
-                    print("test")
                     result_pointer = run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, from_str)
-                    print("test2")
-                    # result_bytes = ctypes.string_at(result_pointer, plaintextsize)
+                    result_bytes = ctypes.string_at(result_pointer, plaintextsize)
                     pbar.update(1)
 
-print("hello")
 run_enigma_test()
-print("bye")

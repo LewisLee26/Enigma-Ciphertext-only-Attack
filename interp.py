@@ -6,12 +6,17 @@ from torch.nn import BCEWithLogitsLoss
 from torch.utils.data import Dataset, DataLoader
 from datasets import load_from_disk
 from tqdm import tqdm
+from model import VerboseTransformerModel
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 # from captum.attr import visualization as viz
 # from captum.attr import LayerConductance, LayerIntegratedGradients
+
 import torchlens as tl
 
-CHARSET_SIZE = 26
+CHARSET_SIZE = 27
 
 class TransformerModel(nn.Module):
 
@@ -19,8 +24,9 @@ class TransformerModel(nn.Module):
         super(TransformerModel, self).__init__()
         
         self.adim = adim
-        encoder_layers = nn.TransformerEncoderLayer(adim, nhead, nhid, dropout)
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layers, nlayers)
+        # encoder_layers = nn.TransformerEncoderLayer(adim, nhead, nhid, dropout)
+        # self.transformer_encoder = nn.TransformerEncoder(encoder_layers, nlayers)
+        self.transformer_encoder = nn.TransformerEncoderLayer(adim, nhead, nhid, dropout)
 
         self.classifier = nn.Linear(nhid*adim, 1)
 
@@ -30,7 +36,7 @@ class TransformerModel(nn.Module):
         src = self.transformer_encoder(src)
         src = torch.flatten(src, -2)
         src = self.classifier(src)
-        return F.sigmoid(src).squeeze(-1)
+        return src
 
     def resize_embedding(self, input_tensor):
         input_size = list(input_tensor.shape)
@@ -56,31 +62,96 @@ class CustomDataset(Dataset):
 
         return token, label
 
-test_dataset = load_from_disk(r"dataset\enigma_binary_classification_en_0-13_plugs\test")
-test_tokens = [torch.tensor([ord(char) - 65 for char in (list(text))]).to(torch.int64) for text in tqdm(test_dataset['text'], desc="Loading Testing Dataset")]   
-test_labels = torch.tensor(test_dataset['label'])
-test_dataset = CustomDataset(test_tokens, test_labels)
 
+# loading the dataframe
+df = pd.read_parquet(r"dataset\enigma_binary_classification_wiki_en_4_plugs.parquet")
 
-nhead = 1
+# Tokenizing the dataframe
+text_list = []
+input_size = 512
+for text in tqdm(df["text"], desc="Loading dataframe"):
+    tokens = torch.tensor([ord(char) - ord('A') + 1 for char in (list(text))], dtype=torch.int)
+    if 512-tokens.size(0) > 0:
+        zeros = torch.zeros(512-tokens.size(0), dtype=torch.int)
+        tokens = torch.concatenate((tokens, zeros))
+    text_list.append(tokens)
+df['text'] = text_list
+
+# Converting the dataframe into a dataset
+test_split = 0.2
+test_split_index = round((1-test_split)*len(df['text']))
+print("Converting dataframe to dataset")
+test_dataset = CustomDataset(df['text'][test_split_index:].to_list(), df["label"][test_split_index:].to_list())
+print("Converting dataframe to dataset complete")
+
+test_dataloader = DataLoader(
+    test_dataset,
+    batch_size=1,
+    shuffle=False
+)
+
+nhead = 3
 nhid = 512
 nlayers = 1
 dropout = 0.1
 adim = CHARSET_SIZE + CHARSET_SIZE % nhead
 
-# Instantiate the model
-model = TransformerModel(nhead, adim, nhid, nlayers, dropout)
-criterion = BCEWithLogitsLoss()
+model = VerboseTransformerModel(nhead, adim, nhid, nlayers, dropout, True)
 
-model.load_state_dict(torch.load(r"model/model_4.pt"))
+path = r"model/model_1_12.onnx"
 model.eval()
 
-# print(test(model, test_dataloader, criterion))
+test_input = test_dataset.__getitem__(101)[0]
 
-test_input = test_dataset.__getitem__(1)[0]
 # print(test_input)
+# model_history = tl.log_forward_pass(model, test_input, layers_to_save='all', vis_opt='none')
+# print(model_history)
+# print(model.transformer_encoder.self_attn.out_proj.weight)
 
-model_history = tl.log_forward_pass(model, test_input, layers_to_save='all', vis_opt='none')
-print(model_history)
-print(model_history['scaleddotproductattention_1_12'])
+trim_size = 100
+test_input = test_input[:trim_size]
+zeros = torch.zeros(512-trim_size, dtype=torch.int)
+test_input = torch.concatenate((test_input, zeros), dim=0)
 
+all_tokens = [chr(i+65) for i in test_input.tolist()]
+
+output, attention_weight = model(test_input)
+
+def visualize_token2head_scores(index, x, y):
+    fig = plt.figure(figsize=(30, 50))
+
+    for idx in range(x * y):
+        test_input = test_dataset.__getitem__(index+idx)[0]
+
+        trim_size = 100
+        test_input = test_input[:trim_size]
+        zeros = torch.zeros(512-trim_size, dtype=torch.int)
+        test_input = torch.concatenate((test_input, zeros), dim=0)
+
+
+        all_tokens = [chr(i+65) for i in test_input.tolist()]
+        _, attention_weight = model(test_input)
+
+        scores_np = attention_weight.detach().numpy()
+        scores_mat = scores_np.tolist()
+
+        ax = fig.add_subplot(x, y, idx+1)
+
+        # append the attention weights
+        im = ax.matshow(scores_np, cmap='viridis')
+
+        fontdict = {'fontsize': 20}
+
+        ax.set_xticks(range(len(all_tokens)))
+        ax.set_yticks(range(len(scores_mat)))
+
+        ax.set_xticklabels(all_tokens, fontdict=fontdict, rotation=90)
+        ax.set_yticklabels(range(len(scores_mat[0])), fontdict=fontdict)
+        ax.set_xlabel('Layer {}'.format(idx+1))
+
+    fig.colorbar(im, fraction=0.046, pad=0.04)
+    # plt.tight_layout()
+    plt.show()
+
+visualize_token2head_scores(6, 2, 2)
+    

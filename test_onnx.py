@@ -3,8 +3,12 @@ import onnxruntime
 import torch
 from tqdm import tqdm
 import numpy as np
+import pandas as pd
+from torch.nn import BCEWithLogitsLoss
+from torch.utils.data import Dataset, DataLoader
 
-path = r"model/model_3.onnx"
+path = r"model/model_1_12.onnx"
+
 
 onnx_model = onnx.load(path)
 onnx.checker.check_model(onnx_model)
@@ -13,25 +17,6 @@ ort_session = onnxruntime.InferenceSession(path, providers=['CUDAExecutionProvid
 
 def to_numpy(tensor):
     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
-
-x = torch.rand(512).to(torch.int64)
-
-# compute ONNX Runtime output prediction
-# ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(x)}
-# ort_outs = ort_session.run(None, ort_inputs)
-# print(ort_outs)
-# input()
-
-# for i in tqdm(range(100000)):
-#     ort_outs = ort_session.run(None, ort_inputs)
-
-# # compare ONNX Runtime and PyTorch results
-# np.testing.assert_allclose(to_numpy(torch_out), ort_outs[0], rtol=1e-03, atol=1e-05)
-    
-from torch.nn import BCEWithLogitsLoss
-from torch.utils.data import Dataset, DataLoader
-from datasets import load_from_disk
-
 
 
 class CustomDataset(Dataset):
@@ -57,7 +42,8 @@ def test(model, dataloader, criterion):
     for inputs, labels in tqdm(dataloader):
         ort_inputs = {model.get_inputs()[0].name: to_numpy(inputs[0])}
         outputs = model.run(None, ort_inputs)
-        loss = criterion(torch.tensor(outputs[0]).float(), labels[0].float())
+        # print(torch.tensor(outputs[0][0]).float(), labels[0].float())
+        loss = criterion(torch.tensor(outputs[0][0]).float(), labels[0].float())
         total_loss += loss.item()
 
         # Assuming binary classification
@@ -71,10 +57,27 @@ def test(model, dataloader, criterion):
 
     return average_loss, accuracy
 
-test_dataset = load_from_disk(r"dataset\enigma_binary_classification_en_13_plugs\test")
-test_tokens = [torch.tensor([ord(char) - 65 for char in (list(text))]).to(torch.int64) for text in tqdm(test_dataset['text'], desc="Loading Testing Dataset")]   
-test_labels = torch.tensor(test_dataset['label'])
-test_dataset = CustomDataset(test_tokens, test_labels)
+# loading the dataframe
+df = pd.read_parquet(r"dataset\enigma_binary_classification_wiki_en_12_plugs.parquet")
+
+# Tokenizing the dataframe
+text_list = []
+input_size = 512
+for text in tqdm(df["text"], desc="Loading dataframe"):
+    tokens = torch.tensor([ord(char) - ord('A') + 1 for char in (list(text))], dtype=torch.int)
+    if 512-tokens.size(0) > 0:
+        zeros = torch.zeros(512-tokens.size(0), dtype=torch.int)
+        tokens = torch.concatenate((tokens, zeros))
+    text_list.append(tokens)
+df['text'] = text_list
+
+# Converting the dataframe into a dataset
+test_split = 0.2
+test_split_index = round((1-test_split)*len(df['text']))
+print("Converting dataframe to dataset")
+test_dataset = CustomDataset(df['text'][test_split_index:].to_list(), df["label"][test_split_index:].to_list())
+print("Converting dataframe to dataset complete")
+
 
 test_dataloader = DataLoader(
     test_dataset,
@@ -82,8 +85,6 @@ test_dataloader = DataLoader(
     shuffle=False
 )
 
-
 criterion = BCEWithLogitsLoss()
-
 
 print(test(ort_session, test_dataloader, criterion))

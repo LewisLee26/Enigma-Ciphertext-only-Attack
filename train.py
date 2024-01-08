@@ -2,16 +2,18 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim import Adam
+# from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 from torch.nn import BCEWithLogitsLoss
 from torch.utils.data import DataLoader, Dataset
-from datasets import load_from_disk
+import pandas as pd
 from tqdm import tqdm
 import torch.onnx
 import wandb
+import os
+import json
 
 # Define the size of the character set
-# 28 is a multiple of 4
-CHARSET_SIZE = 26  # A-Z (2  empty embeddings)
+CHARSET_SIZE = 27 # A-Z + empty token
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.set_printoptions(precision=20)
@@ -24,8 +26,9 @@ class TransformerModel(nn.Module):
         super(TransformerModel, self).__init__()
         
         self.adim = adim
-        encoder_layers = nn.TransformerEncoderLayer(adim, nhead, nhid, dropout, batch_first = True)
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layers, nlayers)
+        # encoder_layers = nn.TransformerEncoderLayer(adim, nhead, nhid, dropout, batch_first = True)
+        # self.transformer_encoder = nn.TransformerEncoder(encoder_layers, nlayers)
+        self.transformer_encoder = nn.TransformerEncoderLayer(adim, nhead, nhid, dropout, batch_first = True)
 
         self.classifier = nn.Linear(nhid*adim, 1)
 
@@ -50,11 +53,12 @@ class TransformerModel(nn.Module):
 
 def train(model, criterion, optimizer, epochs, dataloader):
     pbar = tqdm(total=epochs*len(dataloader), desc="Traning - Epoch: 1 - Loss: None")
+    checkpoint = 1
     for epoch in range(epochs):
         running_loss = 0
         for i, (inputs, labels) in enumerate(dataloader):
             model.train()
-            outputs = model(inputs)
+            outputs = model(inputs.to(device))
             # the sigmoid is used outisde the model during training and testing
             # this is so it can be used as a regression model in deployment
             outputs = F.sigmoid(outputs.to(dtype=torch.float64)).squeeze(-1)
@@ -62,6 +66,7 @@ def train(model, criterion, optimizer, epochs, dataloader):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            # scheduler.step(loss, epoch)
 
             running_loss += loss.item()
             pbar.set_description(f"Training - Epoch: {epoch+1} - Loss: {running_loss/(i+1):.5f}")
@@ -69,15 +74,21 @@ def train(model, criterion, optimizer, epochs, dataloader):
 
             wandb.log({"training_loss": loss.item(), "training_mean_running_loss": running_loss/(i+1)})
 
-            if i % (len(dataloader) // 5) == 0:
+            if (i % (len(dataloader) // checkpoints_p_epoch) == 0 and i != 0) or i == 0 :
+                
                 average_loss, accuracy = test(model, test_dataloader_trimmed, criterion)
                 wandb.log({"test_mean_running_loss": average_loss, "test_accuracy": accuracy})
-
+                
+                if i % (len(dataloader) // checkpoints_p_epoch) == 0 and i != 0:
+                    torch.save(model.state_dict(), f"{folder_path}/checkpoint_{checkpoint}.pt")
+                    checkpoint += 1
 
         average_loss, accuracy = test(model, test_dataloader, criterion)
         wandb.log({"test_mean_running_loss": average_loss, "test_accuracy": accuracy})
         print({"test_mean_running_loss": average_loss, "test_accuracy": accuracy})
 
+        torch.save(model.state_dict(), f"{folder_path}/checkpoint_{checkpoint}.pt")
+        checkpoint += 1
 
 def test(model, dataloader, criterion):
     model.eval()
@@ -87,7 +98,7 @@ def test(model, dataloader, criterion):
 
     with torch.no_grad():
         for inputs, labels in dataloader:
-            outputs = model(inputs)
+            outputs = model(inputs.to(device))
             outputs = F.sigmoid(outputs).squeeze(-1)
             loss = criterion(outputs, labels.float())
             total_loss += loss.item()
@@ -119,34 +130,44 @@ class CustomDataset(Dataset):
         return token, label
 
 
-test_dataset = load_from_disk(r"dataset\enigma_binary_classification_en_0-13_plugs\test")
-test_tokens = [torch.tensor([ord(char) - 65 for char in (list(text))]) for text in tqdm(test_dataset['text'], desc="Loading Testing Dataset")]   
-test_labels = torch.tensor(test_dataset['label'])
-test_dataset = CustomDataset(test_tokens, test_labels)
-test_dataset_trimmed = CustomDataset(test_tokens[:500], test_labels[:500])
+# loading the dataframe
+df = pd.read_parquet(r"dataset\enigma_binary_classification_wiki_en_0-13_plugs.parquet")
+
+# Tokenizing the dataframe
+text_list = []
+input_size = 512
+for text in tqdm(df["text"], desc="Loading dataframe"):
+    tokens = torch.tensor([ord(char) - ord('A') + 1 for char in (list(text))], dtype=torch.int)
+    if 512-tokens.size(0) > 0:
+        zeros = torch.zeros(512-tokens.size(0), dtype=torch.int)
+        tokens = torch.concatenate((tokens, zeros))
+    text_list.append(tokens)
+df['text'] = text_list
+
+# Converting the dataframe into a dataset
+test_split = 0.2
+test_split_index = round((1-test_split)*len(df['text']))
+print("Converting dataframe to dataset")
+train_dataset = CustomDataset(df['text'][:test_split_index].to_list(), df['label'][:test_split_index].to_list())
+test_dataset = CustomDataset(df['text'][test_split_index:].to_list(), df["label"][test_split_index:].to_list())
+# A smaller dataset for testing mid-epoch
+test_dataset_trimmed = CustomDataset(df['text'][test_split_index:test_split_index+500].to_list(), df["label"][test_split_index:test_split_index+500].to_list())
+print("Converting dataframe to dataset complete")
 
 
-train_dataset = load_from_disk(r"dataset\enigma_binary_classification_en_0-13_plugs\train")
-train_tokens = [torch.tensor([ord(char) - 65 for char in (list(text))]) for text in tqdm(train_dataset['text'], desc="Loading Training Dataset")]   
-train_labels = torch.tensor(train_dataset['label'])
-train_dataset = CustomDataset(train_tokens, train_labels)
-
-batch_size = 15
-
-# Example DataLoader for training
+# Create dataloaders
+batch_size = 10
 train_dataloader = DataLoader(
     train_dataset,
     batch_size=batch_size,
     shuffle=True
 )
 
-# Example DataLoader for validation
 test_dataloader = DataLoader(
     test_dataset,
     batch_size=batch_size,
     shuffle=False
 )
-
 
 test_dataloader_trimmed = DataLoader(
     test_dataset_trimmed,
@@ -154,25 +175,43 @@ test_dataloader_trimmed = DataLoader(
     shuffle=False
 )
 
+
 # Instantiate the model with some sample parameters
-nhead = 1
+nhead = 3
 nhid = 512
 nlayers = 1
 dropout = 0.1
-lr = 0.0005
-epochs = 2
-adim = CHARSET_SIZE + CHARSET_SIZE % nhead
+lr = 5e-4
+epochs = 15
+adim = ((CHARSET_SIZE // nhead) + 1) * nhead
 
 # Instantiate the model
-model = TransformerModel(nhead, adim, nhid, nlayers, dropout)
+model = TransformerModel(nhead, adim, nhid, nlayers, dropout).to(device)
+
 criterion = BCEWithLogitsLoss()
 optimizer = Adam(model.parameters(), lr=lr)
+# scheduler = StepLR(optimizer, step_size=5, gamma=0.1)  # Adjust step_size and gamma as needed
+# scheduler = ReduceLROnPlateau(optimizer)
 
+# Create a folder for the model
+checkpoints_p_epoch = 5
+folder_limit = 1000
+folder_created = False
+for i in range(folder_limit):
+    folder_path = f"model/model_{i+1}"
+    # Create the folder if it doesn't exist
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        folder_created = True
+        print(f"Folder '{folder_path}' created successfully.")
+        break
 
+# Run the training if a model folder is created 
+if folder_created == True:
+    # Specify the path for the JSON file within the folder
+    json_file_path = os.path.join(folder_path, 'config.json')
 
-
-wandb.init(
-    project="Enigma Ciphertext-only Attack",
+    # Model config from parameters
     config={
         "learning_rate": lr,
         "epochs": epochs,
@@ -181,21 +220,43 @@ wandb.init(
         "num_layers": nlayers,
         "dropout": dropout,
     }
-)
+
+    # Write the JSON data to the file
+    with open(json_file_path, 'w') as json_file:
+        json.dump(config, json_file, indent=2)
+
+    print(f"JSON file '{json_file_path}' created successfully.")
 
 
-train(model, criterion, optimizer, epochs=epochs, dataloader=train_dataloader)
+    # Initialise wandb run
+    wandb.init(
+        project="Enigma Ciphertext-only Attack",
+        config={
+            "learning_rate": lr,
+            "epochs": epochs,
+            "num_heads": nhead,
+            "hidden_dimensions": nhid,
+            "num_layers": nlayers,
+            "dropout": dropout,
+        }
+    )
 
-test(model, test_dataloader, criterion)
+
+    train(model, criterion, optimizer, epochs=epochs, dataloader=train_dataloader)
+
+    test(model, test_dataloader, criterion)
 
 
-torch.save(model.state_dict(), r"model/model_4.pt")
+    # torch.save(model.state_dict(), r"model/model_7.pt")
 
 
-dummy_input = torch.rand(512).to(torch.int64)
+    # dummy_input = torch.rand(512).to(torch.int)
 
-torch.onnx.export(model,               # model being run
-                  dummy_input,                         # model input (or a tuple for multiple inputs)
-                  r"model/model_4.onnx",   # where to save the model (can be a file or file-like object)
-                  verbose=True
-                  )
+    # torch.onnx.export(model,               # model being run
+    #                 dummy_input,                         # model input (or a tuple for multiple inputs)
+    #                 r"model/model_7.onnx",   # where to save the model (can be a file or file-like object)
+    #                 verbose=True
+    #                 )
+
+else:
+    print(f"Folder limit ({folder_limit}) readed ")

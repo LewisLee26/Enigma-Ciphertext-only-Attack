@@ -1,3 +1,4 @@
+
 import re
 from tqdm.auto import tqdm
 import numpy as np
@@ -6,6 +7,7 @@ import onnxruntime
 from itertools import permutations
 from ctypes import *
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 # Load the enigmac library
 libenigma = CDLL(r'./enigmac/enigma.dll')
@@ -33,6 +35,7 @@ wheel_order = (c_int * 3)(0, 1, 2)
 ring_setting = create_string_buffer(b"AAA")
 wheel_pos = create_string_buffer(b"ANP")
 plugboard_pairs = create_string_buffer(b"ARBYCOHXINMZ")
+# plugboard_pairs = create_string_buffer(b"BYCOHXINMZ")
 # plugboard_pairs = create_string_buffer(b"")
 from_str = "CKFRKWZSEHCKSRFJIBWXRMMFHJCWJLFHFYNBWXULALKDVNLURSPWXNTBAWZKCQWVXCNCXXQVQDQLCAKYGSPIUQOUQXARYMHEIAVWBTZUZDYXZGHPGMHRUUWCELNZRJENVSDTFKMYXKOVZBQDEUZTFVZPLKTRJGLKBORCXYSLYMRAORDTIYDZSWAXTOSBJPINJPRZQNWECWNQOMKNGPCNRHWQAMGJXTLJHJNUJYYKTUSPRPTRALIZICFZJMKBFFQZPZGEBMUSIEJQVKGCTNFLZSEMHOSLDBYZJRYDRGQNJUPIAHJWZIXDADJMWQAGVJLGZGFCLMECEXBLRXTBCZIZVPCRPKUVGCXRJUFVBMEDIILDZAAYBFIREMHBHBZOWCRKQLYEKKGGVBQGRIATLOWOENQBBZRVIVTUTNNWRDTGFZCIABXVAZZPNLCTJKCJAEXVWHZWOEKCBQMKMSAWPIRCHXVJCMNFJFBAJKTNKLCMWBBYPDKTAVMCTBOXCHXSBQQYZIVQVCLQZQRFNXXUPOLQNMMBDGLRNHGVAOAPBUWBJMOZYXFGJURDETDCOAYDQQMNJLJZMXFVBJVKWVUJXTTBACBRIUJYBLCOZMOIRGRJLIZMPWKRJXUTTGVHRDZAKLSSIOIEHIYWLSQHCGHGRRUPICGHOJQSWGXYFFIBFKLLLRVJSTTZQWLJSWXLNRESBKXJKLZOBPRLQFZBPLZUPNPAUJFMVYVSCRCJRJHNKXUYPVQMWMWHNVGHPIZANQWUPAALEMHAYANFDUGMJDUVHRCDYPNBPOTKUOZYXHUXSLFMMRDLTLIXZGMVJPRYSYPTMNOZQUXNEOHZNNTGQEHALJHTWEHBQVKOOJTCGMSUXEHBOMXBXWUGLIALJPDBVMSJUZTUPYLOBOYUXXDGAUHYSNZAVSXJIEQVMFBNQZYXRASWFANPXKWSABNGEQPNHBFFNEXEONWAPVTMKQRABCIHJMPYCCMBVQNHMCHGNDKRCJWQIYJMBQGZCHCWVJPVWVMZENBRQXOKCAFPBGAKAEJZJJWDAZIJMVEOWLWMMSSDAMTKALHBFNEEVKXHDTVTKOHLRHVCFNEOXZKCLBLROFPHUNOYCRIWTPWJEKGCFVAWRQWFAYBXFPEWRGJMVSVFWPPUQYWWYLXLIZFXRKRTLGZPQTXDGQRTMKMDITHNCPIIDKTBJKCURTHAUITPIVDRXIWLIXXCDQHXREZZSCAGKIEUMJYEBGFFXXIDJAUNJPONFPLZCBONNJOUQEJIIPUSCBELPFJYVYJSVJXCYYLVLXUURRMPRBQHTRLRXOLSBMKDFSSGDWBFGKZUEJQRTBFVTOWPQMACUVVYAWZCMYQPOJGPEUAJYYGJRDPRGDYPVWGLQJVRLKOPBRAZOEXKGFNVYDDXYBVKWPELSPVPASQRQJECBUKHCTFXVNPTGUPGGOLLUZBPPPHLOCCPDGZUSDYRUCDUVRRELISSAQVVEHBYWVKILBRVNYSTKHTSRMPEEEJOBCIZVLTUQIKSODWZFDCFJODQPECXZTWWKJPSQDTCZPEWGIWCQWEFHGJPXIAAYTNTTVKOGFFCARLPNEAXNHGCTPNIVKYHIYMERGTGWOJCZFXYBYFCHMIOWLREWRPUYHRBQRDKXWVVRUUICXOACFKOZWTYWUULBKMQ"
 # from_str = "NUWHAQRFMCBBSMYJKMEXGEXIYHXIKUSZBTUQADSRKGABHCMUMIESEPCGPWEAIJKHBZWRVLYVAQELXZJTWLQKIVORJGDAROMJTUQNXDGGVGUBPDWYFIUJQXVSBHXRLAMSAIJXCAONVDHKDYNZKYTRMIFLDNTXBEEJGAMSNYJUVFHWAUZSVNKSBXHFGGBUPOYBODZCLPQXWGIUMMOAGQCTISTDAYESSMQWUMUGYIUMYHBXBUJYQIDCHHTCMAZFZYGHJWLTCFUEJLFBRYKLGYZVLVEARZEESTUBKACDAXJIVULBZXACHGPXRCNAXIRTAFTBRBQFJOAXTLYBSRTJCZFUIXDKISLJNQVCWZCRGQOZJNZWVNLKBYBQFWHJALWDMKHQILXIEJQJUGSPWXEAPVJBKRBNTBPIORXFWLIVKKDCFXZAGDISWQQCVKZENNRMXTSHTPGKXOMXFGJQMFNRNDVQYMBFDSGJVPFRFLRGDHJNXEUPBKUPEOUXRDGRMTIWKWJS"
@@ -56,42 +59,44 @@ combinations_list = list(permutations(wheels, 3))
 
 def run_enigma_test():
     max_index = 17576*len(combinations_list)
-    highest_val = 0
-
+    scores = np.zeros(17576*len(combinations_list))
     pbar = tqdm(total = max_index, desc="Searching for rotor")
     for wheel_order in combinations_list:
-        # wheel_order = (c_int * 3)(wheel_order[0], wheel_order[1], wheel_order[2])
         for i in range(26):
             for j in range(26):
                 for k in range(26):
-                    wheel_order = (c_int * 3)(wheel_order[0], wheel_order[1], wheel_order[2])
+                    wheel_order_2 = (c_int * 3)(wheel_order[0], wheel_order[1], wheel_order[2])
                     wheel_pos = create_string_buffer((chr(65 + i) + chr(65 + j) + chr(65 + k)).encode())
 
-                    result = libenigma.run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, from_str)
+                    result = libenigma.run_enigma(reflector, wheel_order_2, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, from_str)
                     result_bytes = string_at(result, (plaintextsize-1))
-                    
+
                     inputs = {ort_session.get_inputs()[0].name: tokenize(result_bytes.decode())}
                     output = ort_session.run(None, inputs)
+                    if wheel_order == (0, 1, 2) and i == 0 and j == 13 and k == 15:
+                        # print(output)
+                        correct_score = output
+                        # print(result_bytes.decode())
+                    scores[combinations_list.index(wheel_order)*17576+(i*26**2+j*26+k)] = output[0]
 
-                    if output[0] > highest_val:
-                        highest_val = output[0]
-                        highest_val_wheel_pos = [i, j, k]
-                        highest_val_wheel_order = wheel_order
                     pbar.update(1)
 
-        
-    return highest_val, highest_val_wheel_pos, highest_val_wheel_order
+    return scores, correct_score
 
-highest_val, highest_val_wheel_pos, highest_val_wheel_order = run_enigma_test()
+scores, correct_score = run_enigma_test()
 
-print(highest_val)
-print(highest_val_wheel_pos)
-wheel_pos_2 = create_string_buffer((chr(65 + highest_val_wheel_pos[0]) + chr(65 + highest_val_wheel_pos[1]) + chr(65 + highest_val_wheel_pos[2])).encode())
-result = libenigma.run_enigma(reflector, highest_val_wheel_order, ring_setting, wheel_pos_2, plugboard_pairs, plaintextsize, from_str)
-result_bytes = string_at(result, (plaintextsize-1))
-print(result_bytes.decode())
+# plt.figure()
 
-wheel_pos = create_string_buffer(b"ANP")
-result = libenigma.run_enigma(reflector, wheel_order, ring_setting, wheel_pos, plugboard_pairs, plaintextsize, from_str)
-result_bytes = string_at(result, (plaintextsize-1))
-print(result_bytes.decode())
+scores.sort()
+
+# plt.plot(range(scores.size), scores, color='blue')
+
+# plt.axhline(y=correct_score, color='black', linestyle='dotted', linewidth=1, label='Dotted Line')
+
+# # Display the final plot
+# plt.show()
+
+index = np.where(scores == correct_score)
+
+print(index[1])
+print(index[1]/scores.size)
